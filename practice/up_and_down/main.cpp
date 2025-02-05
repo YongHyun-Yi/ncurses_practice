@@ -16,7 +16,11 @@ void draw()
 	curs_set(0);
 	for (int i = 0; i < 10; i++)
 	{
-		mvprintw(i, 5, "■ 1");
+		mvprintw(i, 0, "■");
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		mvprintw(0, 2 * i, "■");
 	}
 	refresh();
 	getch();
