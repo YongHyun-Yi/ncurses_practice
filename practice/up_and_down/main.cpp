@@ -2,8 +2,19 @@
 #include <string>
 #include <time.h>
 #include <stdlib.h>
+#include <ncurses.h>
+#include <panel.h>
 
 #include <sstream>
+
+void draw()
+{
+	initscr();
+	mvprintw(5, 5, "□");
+	refresh();
+	getch();
+	endwin();
+}
 
 int main()
 {
@@ -11,39 +22,40 @@ int main()
 	int ans, upto = 101, downto = 0;
 	srand(time(0));
 	ans = rand() % 100 + 1;
+	draw();
 
-	std::cout << "answer: " << ans << "\n\n";
-	while (1)
-	{
-		std::string str;
-		std::stringstream ss;
-		int input;
+	// std::cout << "answer: " << ans << "\n\n";
+	// while (1)
+	// {
+	// 	std::string str;
+	// 	std::stringstream ss;
+	// 	int input;
 
-		std::cout << "guessing: ";
-		std::cin >> str;
-		ss << str;
-		ss >> input;
+	// 	std::cout << "guessing: ";
+	// 	std::cin >> str;
+	// 	ss << str;
+	// 	ss >> input;
 
-		if (input == ans)
-		{
-			std::cout << "\ncorrect!\n";
-			break ;
-		}
-		if (input <= downto || input >= upto)
-		{
-			std::cout << "that number was already excluded! try again!\n\n";
-		}
-		else
-		{
-			if (input > ans)
-			{
-				upto = input;
-			}
-			else
-			{
-				downto = input;
-			}
-			std::cout << "wrong...try again!\n\n";
-		}
-	}
+	// 	if (input == ans)
+	// 	{
+	// 		std::cout << "\ncorrect!\n";
+	// 		break ;
+	// 	}
+	// 	if (input <= downto || input >= upto)
+	// 	{
+	// 		std::cout << "that number was already excluded! try again!\n\n";
+	// 	}
+	// 	else
+	// 	{
+	// 		if (input > ans)
+	// 		{
+	// 			upto = input;
+	// 		}
+	// 		else
+	// 		{
+	// 			downto = input;
+	// 		}
+	// 		std::cout << "wrong...try again!\n\n";
+	// 	}
+	// }
 }
