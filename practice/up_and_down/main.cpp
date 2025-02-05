@@ -13,7 +13,11 @@ void draw()
 {
 	setlocale(LC_CTYPE, "");
 	initscr();
-	mvprintw(5, 5, "■");
+	curs_set(0);
+	for (int i = 0; i < 10; i++)
+	{
+		mvprintw(i, 5, "■ 1");
+	}
 	refresh();
 	getch();
 	endwin();
