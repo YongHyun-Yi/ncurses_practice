@@ -2,6 +2,8 @@
 #include <string>
 #include <time.h>
 #include <stdlib.h>
+
+#include <locale.h>
 #include <ncurses.h>
 #include <panel.h>
 
@@ -9,8 +11,9 @@
 
 void draw()
 {
+	setlocale(LC_CTYPE, "");
 	initscr();
-	mvprintw(5, 5, "□");
+	mvprintw(5, 5, "■");
 	refresh();
 	getch();
 	endwin();
