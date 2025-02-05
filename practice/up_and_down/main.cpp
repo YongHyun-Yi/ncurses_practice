@@ -7,7 +7,8 @@
 
 int main()
 {
-	int ans;
+	// 1 ~ 100
+	int ans, upto = 101, downto = 0;
 	srand(time(0));
 	ans = rand() % 100 + 1;
 
@@ -28,6 +29,21 @@ int main()
 			std::cout << "\ncorrect!\n";
 			break ;
 		}
-		std::cout << "wrong...try again!\n\n";
+		if (input <= downto || input >= upto)
+		{
+			std::cout << "that number was already excluded! try again!\n\n";
+		}
+		else
+		{
+			if (input > ans)
+			{
+				upto = input;
+			}
+			else
+			{
+				downto = input;
+			}
+			std::cout << "wrong...try again!\n\n";
+		}
 	}
 }
