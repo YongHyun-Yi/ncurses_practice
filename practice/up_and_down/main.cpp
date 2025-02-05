@@ -1,10 +1,13 @@
 #include <iostream>
 #include <string>
+#include <time.h>
+#include <stdlib.h>
 
 int main()
 {
-	std::string st;
-	std::cout << "Enter the string you want: ";
-	std::cin >> st;
-	std::cout << "your input is: " << st << "\n";
+	int ans;
+	srand(time(0));
+	ans = rand() % 100 + 1;
+
+	std::cout << "answer: " << ans << "\n";
 }
