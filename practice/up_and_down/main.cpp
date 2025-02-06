@@ -14,13 +14,15 @@ void draw()
 	setlocale(LC_CTYPE, "");
 	initscr();
 	curs_set(0);
-	for (int i = 0; i < 10; i++)
+	for (int y = 0; y < 10; y++)
 	{
-		mvprintw(i, 0, "■");
-	}
-	for (int i = 0; i < 10; i++)
-	{
-		mvprintw(0, 2 * i, "■");
+		for (int x = 0; x < 10; x++)
+		{
+			std::stringstream ss;
+			ss.width(2);
+			ss << (y * 10) + x;
+			mvprintw(y, x * 3, ss.str().c_str());
+		}
 	}
 	refresh();
 	getch();
