@@ -14,6 +14,9 @@ void draw()
 	setlocale(LC_CTYPE, "");
 	initscr();
 	curs_set(0);
+	start_color();
+	init_pair(1, COLOR_BLACK, COLOR_WHITE);
+	attron(COLOR_PAIR(1));
 	for (int y = 0; y < 10; y++)
 	{
 		for (int x = 0; x < 10; x++)
@@ -21,9 +24,11 @@ void draw()
 			std::stringstream ss;
 			ss.width(2);
 			ss << (y * 10) + x;
+
 			mvprintw(y, x * 3, ss.str().c_str());
 		}
 	}
+	attroff(COLOR_PAIR(1));
 	refresh();
 	getch();
 	endwin();
