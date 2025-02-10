@@ -27,8 +27,6 @@ void draw()
 	}
 	attroff(COLOR_PAIR(1));
 	refresh();
-	getch();
-	endwin();
 }
 
 void init()
@@ -56,4 +54,7 @@ int main()
 		// 화면을 렌더링합니다.
 		draw();
 	}
+
+	// ncurses 모드를 종료합니다.
+	endwin();
 }
