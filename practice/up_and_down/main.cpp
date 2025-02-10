@@ -11,19 +11,25 @@
 
 #define CHAR_WIDTH 2
 #define CHAR_MARGIN 1
+#define BUFMAX 512
 
 int ans, upto = 101, downto = 0;
 
 void click_handler(MEVENT &mevent)
 {
 	std::stringstream ss;
+	char buf[BUFMAX];
+	int num;
 
-	ss << "mouse event detected! x: " << std::to_string(mevent.x) << " y: " << std::to_string(mevent.y);
-	mvprintw(11, 0, ss.str().c_str());
-	ss.str("");
-	ss << "clicked number: " + std::to_string((mevent.x / (CHAR_WIDTH + CHAR_MARGIN)) + (mevent.y * 10)) + " ";
-	mvprintw(12, 0, ss.str().c_str());
-	ss.str("");
+	num = (mevent.x / (CHAR_WIDTH + CHAR_MARGIN)) + (mevent.y * 10);
+
+	snprintf(buf, BUFMAX, "mouse event detected! x: %d, y: %d", mevent.x, mevent.y);
+	mvprintw(11, 0, buf);
+
+	snprintf(buf, BUFMAX, "clicked number: %.2d", num);
+	mvprintw(12, 0, buf);
+
+	
 }
 
 void draw()
@@ -87,6 +93,7 @@ int main()
 {
 	// 초기화를 진행합니다.
 	init();
+	draw();
 
 	// 계속해서 반복되는 핵심 부분입니다.
 	while(1)
