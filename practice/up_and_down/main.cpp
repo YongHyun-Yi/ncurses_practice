@@ -9,7 +9,22 @@
 
 #include <sstream>
 
+#define CHAR_WIDTH 2
+#define CHAR_MARGIN 1
+
 int ans, upto = 101, downto = 0;
+
+void click_handler(MEVENT &mevent)
+{
+	std::stringstream ss;
+
+	ss << "mouse event detected! x: " << std::to_string(mevent.x) << " y: " << std::to_string(mevent.y);
+	mvprintw(11, 0, ss.str().c_str());
+	ss.str("");
+	ss << "clicked number: " + std::to_string((mevent.x / (CHAR_WIDTH + CHAR_MARGIN)) + (mevent.y * 10)) + " ";
+	mvprintw(12, 0, ss.str().c_str());
+	ss.str("");
+}
 
 void draw()
 {
@@ -22,28 +37,34 @@ void draw()
 			ss.width(2);
 			ss << (y * 10) + x;
 			
-			mvprintw(y, x * 3, ss.str().c_str());
+			mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), ss.str().c_str());
 		}
 	}
 	attroff(COLOR_PAIR(1));
 	refresh();
+}
 
-	// 마우스 입력 받기
+void run()
+{
 	int c = getch();
-	MEVENT mevent;
-	std::stringstream ss;
+
 	switch(c)
 	{
+		// 마우스 이벤트 처리
+		// 이벤트 종류에 따라 분기
 		case KEY_MOUSE:
+			MEVENT mevent;
+
 			if (getmouse(&mevent) == OK)
 			{
-				ss << "mouse event detected! x: " << std::to_string(mevent.x) << " y: " << std::to_string(mevent.y);
-				mvprintw(11, 0, ss.str().c_str());
-				ss.str("");
-				break ;
+				if (mevent.bstate & BUTTON1_CLICKED)
+					click_handler(mevent);
 			}
+			break;
 	}
-	refresh();
+
+	// 나중에 매번 draw 하는것이 아니라 한 번이라도 유효한 입력이 있으면 draw 하도록 수정하기
+	draw();
 }
 
 void init()
@@ -71,7 +92,7 @@ int main()
 	while(1)
 	{
 		// 화면을 렌더링합니다.
-		draw();
+		run();
 	}
 
 	// ncurses 모드를 종료합니다.
