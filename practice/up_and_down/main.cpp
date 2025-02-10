@@ -9,13 +9,10 @@
 
 #include <sstream>
 
+int ans, upto = 101, downto = 0;
+
 void draw()
 {
-	setlocale(LC_CTYPE, "");
-	initscr();
-	curs_set(0);
-	start_color();
-	init_pair(1, COLOR_BLACK, COLOR_WHITE);
 	attron(COLOR_PAIR(1));
 	for (int y = 0; y < 10; y++)
 	{
@@ -24,7 +21,7 @@ void draw()
 			std::stringstream ss;
 			ss.width(2);
 			ss << (y * 10) + x;
-
+			
 			mvprintw(y, x * 3, ss.str().c_str());
 		}
 	}
@@ -34,46 +31,29 @@ void draw()
 	endwin();
 }
 
-int main()
+void init()
 {
-	// 1 ~ 100
-	int ans, upto = 101, downto = 0;
+	// 0 ~ 99 사이의 무작위 숫자를 생성합니다.
 	srand(time(0));
 	ans = rand() % 100 + 1;
-	draw();
 
-	// std::cout << "answer: " << ans << "\n\n";
-	// while (1)
-	// {
-	// 	std::string str;
-	// 	std::stringstream ss;
-	// 	int input;
+	// ncurses 의 초기화 함수들을 설정합니다.
+	setlocale(LC_CTYPE, "");
+	initscr();
+	curs_set(0);
+	start_color();
+	init_pair(1, COLOR_BLACK, COLOR_WHITE);
+}
 
-	// 	std::cout << "guessing: ";
-	// 	std::cin >> str;
-	// 	ss << str;
-	// 	ss >> input;
+int main()
+{
+	// 초기화를 진행합니다.
+	init();
 
-	// 	if (input == ans)
-	// 	{
-	// 		std::cout << "\ncorrect!\n";
-	// 		break ;
-	// 	}
-	// 	if (input <= downto || input >= upto)
-	// 	{
-	// 		std::cout << "that number was already excluded! try again!\n\n";
-	// 	}
-	// 	else
-	// 	{
-	// 		if (input > ans)
-	// 		{
-	// 			upto = input;
-	// 		}
-	// 		else
-	// 		{
-	// 			downto = input;
-	// 		}
-	// 		std::cout << "wrong...try again!\n\n";
-	// 	}
-	// }
+	// 계속해서 반복되는 핵심 부분입니다.
+	while(1)
+	{
+		// 화면을 렌더링합니다.
+		draw();
+	}
 }
