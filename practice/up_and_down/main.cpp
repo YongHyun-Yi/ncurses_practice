@@ -34,7 +34,21 @@ void click_handler(MEVENT &mevent)
 	snprintf(buf, BUFMAX, "clicked number: %.2d", num);
 	mvprintw(12, 0, buf);
 
-	
+	if (num < ans)
+	{
+		snprintf(buf, BUFMAX, "%.2d is smaller than answer", num);
+		mvprintw(13, 0, buf);
+	}
+	else if (num > ans)
+	{
+		snprintf(buf, BUFMAX, "%.2d is greater than answer", num);
+		mvprintw(13, 0, buf);
+	}
+	else
+	{
+		snprintf(buf, BUFMAX, "%.2d is answer              ", num);
+		mvprintw(13, 0, buf);
+	}
 }
 
 void draw()
