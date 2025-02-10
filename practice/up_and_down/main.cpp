@@ -19,9 +19,14 @@ void click_handler(MEVENT &mevent)
 {
 	std::stringstream ss;
 	char buf[BUFMAX];
-	int num;
+	int x, y, num;
 
-	num = (mevent.x / (CHAR_WIDTH + CHAR_MARGIN)) + (mevent.y * 10);
+	// 공백 클릭은 무시한다
+	if (mevent.x % 3 == 2)
+		return ;
+	x = mevent.x / (CHAR_WIDTH + CHAR_MARGIN);
+	y = mevent.y * 10;
+	num = x + y;
 
 	snprintf(buf, BUFMAX, "mouse event detected! x: %d, y: %d", mevent.x, mevent.y);
 	mvprintw(11, 0, buf);
