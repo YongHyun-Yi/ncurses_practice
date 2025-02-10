@@ -27,6 +27,23 @@ void draw()
 	}
 	attroff(COLOR_PAIR(1));
 	refresh();
+
+	// 마우스 입력 받기
+	int c = getch();
+	MEVENT mevent;
+	std::stringstream ss;
+	switch(c)
+	{
+		case KEY_MOUSE:
+			if (getmouse(&mevent) == OK)
+			{
+				ss << "mouse event detected! x: " << std::to_string(mevent.x) << " y: " << std::to_string(mevent.y);
+				mvprintw(11, 0, ss.str().c_str());
+				ss.str("");
+				break ;
+			}
+	}
+	refresh();
 }
 
 void init()
@@ -39,6 +56,8 @@ void init()
 	setlocale(LC_CTYPE, "");
 	initscr();
 	curs_set(0);
+	keypad(stdscr, TRUE);
+	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 	start_color();
 	init_pair(1, COLOR_BLACK, COLOR_WHITE);
 }
