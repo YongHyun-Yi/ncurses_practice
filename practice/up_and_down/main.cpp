@@ -13,79 +13,58 @@
 #define CHAR_MARGIN 1
 #define BUFMAX 512
 
-int ans, upto = 101, downto = 0;
+int ans, upto = 100, downto = 0;
 
 void draw2()
 {
-	int num;
-	attr_t attrs;
-	short pair;
 	char buf[BUFMAX];
+	// int num;
+	// attr_t attrs;
+	// short pair;
 
-	attron(COLOR_PAIR(1));
-	for (int y = 0; y < 10; y++)
+	// downto 비활성화 부분
+	attron(A_DIM);
+	attron(COLOR_PAIR(2));
+	for (int num = 0; num < downto; num++)
 	{
-		for (int x = 0; x < 10; x++)
-		{
-			num = x + y * 10;
-			snprintf(buf, BUFMAX, "num: %.2d", num);
-			mvprintw(15, 0, buf);
-			snprintf(buf, BUFMAX, "x: %.2d, y: %.2d", x, y);
-			mvprintw(16, 0, buf);
-			if (num < downto || num > upto)
-			{
-				attr_get(&attrs, &pair, NULL);
-				mvprintw(14, 0, "DIM OFF");
-				if (!(attrs & A_DIM))
-				{
-					attron(A_DIM);
-				}
-				if (pair != COLOR_PAIR(2))
-				{
-					attroff(COLOR_PAIR(pair));
-					attron(COLOR_PAIR(2));
-				}
-			}
-			else if (num == downto || num == upto)
-			{
-				attr_get(NULL, &pair, NULL);
-				if (pair & COLOR_PAIR(3))
-				{
-					attroff(COLOR_PAIR(pair));
-					attron(COLOR_PAIR(3));
-				}
-			}
-			else
-			{
-				attr_get(&attrs, &pair, NULL);
-				mvprintw(14, 0, "DIM ON");
-				if ((attrs & A_DIM))
-				{
-					attroff(A_DIM);
-				}
-				if (pair != COLOR_PAIR(1))
-				{
-					attroff(COLOR_PAIR(pair));
-					attron(COLOR_PAIR(1));
-				}
-			}
-			std::stringstream ss;
-			ss.width(2);
-			ss << (y * 10) + x;
-			
-			mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), ss.str().c_str());
-			refresh();
-		}
+		int x, y;
+
+		x = num % 10;
+		y = num / 10;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
-	if ((attrs & A_DIM))
+	attroff(A_DIM);
+	attroff(COLOR_PAIR(2));
+
+	// 활성화 부분
+	attron(COLOR_PAIR(1));
+	for (int num = downto; num < upto; num++)
 	{
-		attroff(A_DIM);
+		int x, y;
+
+		x = num % 10;
+		y = num / 10;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
 	attroff(COLOR_PAIR(1));
-	// 이전 방식은 loop마다 stringstream 에 추가하는 식이였음
-	// 지금은 다름...
-	// 결국 마지막에 한번에 렌더링하니 그때 세팅된 속성으로 한번에 그림
-	// 지금보니 출력하는 부분도 없음 ㅋㅋㅋ
+
+	// upto 비활성화 부분
+	attron(A_DIM);
+	attron(COLOR_PAIR(2));
+	for (int num = upto; num < 100; num++)
+	{
+		int x, y;
+
+		x = num % 10;
+		y = num / 10;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+	attroff(A_DIM);
+	attroff(COLOR_PAIR(2));
+
 	refresh();
 }
 
@@ -192,7 +171,7 @@ int main()
 {
 	// 초기화를 진행합니다.
 	init();
-	draw();
+	draw2();
 
 	// 계속해서 반복되는 핵심 부분입니다.
 	while(1)
