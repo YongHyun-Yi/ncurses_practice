@@ -15,6 +15,65 @@
 
 int ans, upto = 101, downto = 0;
 
+void draw2()
+{
+	int num;
+	attr_t attrs;
+	short pair;
+	char buf[BUFMAX];
+
+	attron(COLOR_PAIR(1));
+	for (int y = 0; y < 10; y++)
+	{
+		for (int x = 0; x < 10; x++)
+		{
+			num = x + y * 10;
+			snprintf(buf, BUFMAX, "num: %.2d", num);
+			mvprintw(15, 0, buf);
+			snprintf(buf, BUFMAX, "x: %.2d, y: %.2d", x, y);
+			mvprintw(16, 0, buf);
+			if (num < downto || num > upto)
+			{
+				attr_get(&attrs, NULL, NULL);
+				if (attrs & A_DIM)
+				{
+					mvprintw(14, 0, "DIM OFF");
+					attroff(A_DIM);
+				}
+			}
+			else if (num == downto || num == upto)
+			{
+				// attr_get(NULL, &pair, NULL);
+				// if (pair & COLOR_PAIR(1))
+				// {
+				// 	attroff(COLOR_PAIR(1));
+				// 	attron(COLOR_PAIR(2));
+				// }
+			}
+			else
+			{
+				attr_get(&attrs, NULL, NULL);
+				if (!(attrs & A_DIM))
+				{
+					mvprintw(14, 0, "DIM ON");
+					attron(A_DIM);
+				}
+			}
+			std::stringstream ss;
+			ss.width(2);
+			ss << (y * 10) + x;
+			
+			mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), ss.str().c_str());
+		}
+	}
+	attroff(COLOR_PAIR(1));
+	// 이전 방식은 loop마다 stringstream 에 추가하는 식이였음
+	// 지금은 다름...
+	// 결국 마지막에 한번에 렌더링하니 그때 세팅된 속성으로 한번에 그림
+	// 지금보니 출력하는 부분도 없음 ㅋㅋㅋ
+	refresh();
+}
+
 void click_handler(MEVENT &mevent)
 {
 	std::stringstream ss;
@@ -38,17 +97,21 @@ void click_handler(MEVENT &mevent)
 	{
 		snprintf(buf, BUFMAX, "%.2d is smaller than answer", num);
 		mvprintw(13, 0, buf);
+		downto = num;
 	}
 	else if (num > ans)
 	{
 		snprintf(buf, BUFMAX, "%.2d is greater than answer", num);
 		mvprintw(13, 0, buf);
+		upto = num;
 	}
 	else
 	{
 		snprintf(buf, BUFMAX, "%.2d is answer              ", num);
 		mvprintw(13, 0, buf);
 	}
+
+	draw2();
 }
 
 void draw()
@@ -106,6 +169,7 @@ void init()
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 	start_color();
 	init_pair(1, COLOR_BLACK, COLOR_WHITE);
+	init_pair(2, COLOR_BLACK, COLOR_RED);
 }
 
 int main()
