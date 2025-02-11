@@ -34,29 +34,39 @@ void draw2()
 			mvprintw(16, 0, buf);
 			if (num < downto || num > upto)
 			{
-				attr_get(&attrs, NULL, NULL);
-				if (attrs & A_DIM)
+				attr_get(&attrs, &pair, NULL);
+				mvprintw(14, 0, "DIM OFF");
+				if (!(attrs & A_DIM))
 				{
-					mvprintw(14, 0, "DIM OFF");
-					attroff(A_DIM);
+					attron(A_DIM);
+				}
+				if (pair != COLOR_PAIR(2))
+				{
+					attroff(COLOR_PAIR(pair));
+					attron(COLOR_PAIR(2));
 				}
 			}
 			else if (num == downto || num == upto)
 			{
-				// attr_get(NULL, &pair, NULL);
-				// if (pair & COLOR_PAIR(1))
-				// {
-				// 	attroff(COLOR_PAIR(1));
-				// 	attron(COLOR_PAIR(2));
-				// }
+				attr_get(NULL, &pair, NULL);
+				if (pair & COLOR_PAIR(3))
+				{
+					attroff(COLOR_PAIR(pair));
+					attron(COLOR_PAIR(3));
+				}
 			}
 			else
 			{
-				attr_get(&attrs, NULL, NULL);
-				if (!(attrs & A_DIM))
+				attr_get(&attrs, &pair, NULL);
+				mvprintw(14, 0, "DIM ON");
+				if ((attrs & A_DIM))
 				{
-					mvprintw(14, 0, "DIM ON");
-					attron(A_DIM);
+					attroff(A_DIM);
+				}
+				if (pair != COLOR_PAIR(1))
+				{
+					attroff(COLOR_PAIR(pair));
+					attron(COLOR_PAIR(1));
 				}
 			}
 			std::stringstream ss;
@@ -64,7 +74,12 @@ void draw2()
 			ss << (y * 10) + x;
 			
 			mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), ss.str().c_str());
+			refresh();
 		}
+	}
+	if ((attrs & A_DIM))
+	{
+		attroff(A_DIM);
 	}
 	attroff(COLOR_PAIR(1));
 	// 이전 방식은 loop마다 stringstream 에 추가하는 식이였음
@@ -152,7 +167,7 @@ void run()
 	}
 
 	// 나중에 매번 draw 하는것이 아니라 한 번이라도 유효한 입력이 있으면 draw 하도록 수정하기
-	draw();
+	// draw();
 }
 
 void init()
@@ -169,7 +184,8 @@ void init()
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 	start_color();
 	init_pair(1, COLOR_BLACK, COLOR_WHITE);
-	init_pair(2, COLOR_BLACK, COLOR_RED);
+	init_pair(2, COLOR_WHITE, COLOR_BLACK);
+	init_pair(3, COLOR_BLACK, COLOR_RED);
 }
 
 int main()
