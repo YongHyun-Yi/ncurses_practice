@@ -15,6 +15,31 @@
 
 int ans, upto = 100, downto = -1;
 
+void draw_nums(int from, int to, attr_t *attr, int *color)
+{
+	char buf[BUFMAX];
+	
+	if (attr != NULL)
+		attron(*attr);
+	if (color != NULL)
+		attron(COLOR_PAIR(*color));
+	
+	for (int num = from; num <= to; num++)
+	{
+		int x, y;
+
+		x = num % 10;
+		y = num / 10;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+
+	if (attr != NULL)
+		attroff(*attr);
+	if (color != NULL)
+		attroff(COLOR_PAIR(*color));
+}
+
 void draw2()
 {
 	char buf[BUFMAX];
