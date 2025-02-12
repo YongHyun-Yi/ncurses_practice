@@ -13,14 +13,11 @@
 #define CHAR_MARGIN 1
 #define BUFMAX 512
 
-int ans, upto = 100, downto = 0;
+int ans, upto = 100, downto = -1;
 
 void draw2()
 {
 	char buf[BUFMAX];
-	// int num;
-	// attr_t attrs;
-	// short pair;
 
 	// downto 비활성화 부분
 	attron(A_DIM);
@@ -37,9 +34,22 @@ void draw2()
 	attroff(A_DIM);
 	attroff(COLOR_PAIR(2));
 
+	// 선택한 부분
+	attron(COLOR_PAIR(3));
+	if (downto >= 0)
+	{
+		int x, y;
+
+		x = downto % 10;
+		y = downto / 10;
+		snprintf(buf, BUFMAX, "%.2d", downto);
+		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+	attroff(COLOR_PAIR(3));
+
 	// 활성화 부분
 	attron(COLOR_PAIR(1));
-	for (int num = downto; num < upto; num++)
+	for (int num = downto + 1; num < upto; num++)
 	{
 		int x, y;
 
@@ -50,10 +60,23 @@ void draw2()
 	}
 	attroff(COLOR_PAIR(1));
 
+	// 선택한 부분
+	attron(COLOR_PAIR(3));
+	if (upto <= 99)
+	{
+		int x, y;
+
+		x = upto % 10;
+		y = upto / 10;
+		snprintf(buf, BUFMAX, "%.2d", upto);
+		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+	attroff(COLOR_PAIR(3));
+
 	// upto 비활성화 부분
 	attron(A_DIM);
 	attron(COLOR_PAIR(2));
-	for (int num = upto; num < 100; num++)
+	for (int num = upto + 1; num < 100; num++)
 	{
 		int x, y;
 
