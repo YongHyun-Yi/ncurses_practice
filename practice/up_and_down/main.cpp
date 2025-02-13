@@ -15,7 +15,7 @@
 #define DEFAULT_UPTO 100
 #define DEFAULT_DOWNTO -1
 
-int ans, upto, downto;
+int ans, upto, downto, score, highscore = 100;
 
 void init();
 
@@ -132,6 +132,7 @@ void click_handler(MEVENT &mevent)
 	x = mevent.x / (CHAR_WIDTH + CHAR_MARGIN);
 	y = mevent.y * 10;
 	num = x + y;
+	++score;
 
 	snprintf(buf, BUFMAX, "mouse event detected! x: %d, y: %d", mevent.x, mevent.y);
 	mvprintw(11, 0, buf);
@@ -158,8 +159,20 @@ void click_handler(MEVENT &mevent)
 		clear();
 		snprintf(buf, BUFMAX, "Game Over");
 		mvprintw(0, 0, buf);
-		snprintf(buf, BUFMAX, "%.2d is answer              ", num);
-		mvprintw(13, 0, buf);
+		if (score < highscore)
+		{
+			highscore = score;
+			snprintf(buf, BUFMAX, "Congratulations!!! you've got high score!");
+			mvprintw(2, 0, buf);
+		}
+		snprintf(buf, BUFMAX, "High Score: %d try", highscore);
+		mvprintw(3, 0, buf);
+		snprintf(buf, BUFMAX, "Score: %d try", score);
+		mvprintw(4, 0, buf);
+		snprintf(buf, BUFMAX, "answer is: %.2d", num);
+		mvprintw(6, 0, buf);
+		snprintf(buf, BUFMAX, "Press 'R' key to Retry game");
+		mvprintw(7, 0, buf);
 	}
 
 	// draw2();
@@ -221,6 +234,7 @@ void init()
 	// 재시작을 위해 upto, downto 초기화를 init에서 수행
 	upto = DEFAULT_UPTO;
 	downto = DEFAULT_DOWNTO;
+	score = 0;
 
 	// ncurses 의 초기화 함수들을 설정합니다.
 	setlocale(LC_CTYPE, "");
