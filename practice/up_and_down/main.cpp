@@ -12,8 +12,12 @@
 #define CHAR_WIDTH 2
 #define CHAR_MARGIN 1
 #define BUFMAX 512
+#define DEFAULT_UPTO 100
+#define DEFAULT_DOWNTO -1
 
-int ans, upto = 100, downto = -1;
+int ans, upto, downto;
+
+void init();
 
 void draw_nums(int from, int to, attr_t *attr, int *color)
 {
@@ -191,6 +195,12 @@ void run()
 					click_handler(mevent);
 			}
 			break;
+		// 재시작
+		case 'r':
+			clear();
+			init();
+			draw2();
+			break;
 	}
 
 	// 나중에 매번 draw 하는것이 아니라 한 번이라도 유효한 입력이 있으면 draw 하도록 수정하기
@@ -203,10 +213,15 @@ void init()
 	srand(time(0));
 	ans = rand() % 100 + 1;
 
+	// 재시작을 위해 upto, downto 초기화를 init에서 수행
+	upto = DEFAULT_UPTO;
+	downto = DEFAULT_DOWNTO;
+
 	// ncurses 의 초기화 함수들을 설정합니다.
 	setlocale(LC_CTYPE, "");
 	initscr();
 	curs_set(0);
+	noecho();
 	keypad(stdscr, TRUE);
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 	start_color();
