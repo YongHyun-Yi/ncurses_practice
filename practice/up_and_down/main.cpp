@@ -144,20 +144,25 @@ void click_handler(MEVENT &mevent)
 		snprintf(buf, BUFMAX, "%.2d is smaller than answer", num);
 		mvprintw(13, 0, buf);
 		downto = num;
+		draw2();
 	}
 	else if (num > ans)
 	{
 		snprintf(buf, BUFMAX, "%.2d is greater than answer", num);
 		mvprintw(13, 0, buf);
 		upto = num;
+		draw2();
 	}
 	else
 	{
+		clear();
+		snprintf(buf, BUFMAX, "Game Over");
+		mvprintw(0, 0, buf);
 		snprintf(buf, BUFMAX, "%.2d is answer              ", num);
 		mvprintw(13, 0, buf);
 	}
 
-	draw2();
+	// draw2();
 }
 
 void draw()
