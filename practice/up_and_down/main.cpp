@@ -132,6 +132,11 @@ void click_handler(MEVENT &mevent)
 	x = mevent.x / (CHAR_WIDTH + CHAR_MARGIN);
 	y = mevent.y * 10;
 	num = x + y;
+
+	// 제외된 범위 클릭은 무시한다
+	if (num <= downto || num >= upto)
+		return ;
+
 	++score;
 
 	snprintf(buf, BUFMAX, "mouse event detected! x: %d, y: %d", mevent.x, mevent.y);
