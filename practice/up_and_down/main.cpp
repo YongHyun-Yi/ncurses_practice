@@ -117,6 +117,9 @@ void draw2()
 	attroff(A_DIM);
 	attroff(COLOR_PAIR(2));
 
+	snprintf(buf, BUFMAX, "Try: %d", score);
+	mvprintw(11, 0, buf);
+
 	refresh();
 }
 
@@ -139,23 +142,26 @@ void click_handler(MEVENT &mevent)
 
 	++score;
 
-	snprintf(buf, BUFMAX, "mouse event detected! x: %d, y: %d", mevent.x, mevent.y);
-	mvprintw(11, 0, buf);
+	// 디버그 출력
+	// snprintf(buf, BUFMAX, "mouse event detected! x: %d, y: %d", mevent.x, mevent.y);
+	// mvprintw(11, 0, buf);
 
-	snprintf(buf, BUFMAX, "clicked number: %.2d", num);
-	mvprintw(12, 0, buf);
+	// snprintf(buf, BUFMAX, "clicked number: %.2d", num);
+	// mvprintw(12, 0, buf);
 
 	if (num < ans)
 	{
-		snprintf(buf, BUFMAX, "%.2d is smaller than answer", num);
-		mvprintw(13, 0, buf);
+		// 디버그 출력
+		// snprintf(buf, BUFMAX, "%.2d is smaller than answer", num);
+		// mvprintw(13, 0, buf);
 		downto = num;
 		draw2();
 	}
 	else if (num > ans)
 	{
-		snprintf(buf, BUFMAX, "%.2d is greater than answer", num);
-		mvprintw(13, 0, buf);
+		// 디버그 출력
+		// snprintf(buf, BUFMAX, "%.2d is greater than answer", num);
+		// mvprintw(13, 0, buf);
 		upto = num;
 		draw2();
 	}
@@ -164,20 +170,20 @@ void click_handler(MEVENT &mevent)
 		clear();
 		snprintf(buf, BUFMAX, "Game Over");
 		mvprintw(0, 0, buf);
+		snprintf(buf, BUFMAX, "answer is: %.2d", num);
+		mvprintw(1, 0, buf);
 		if (score < highscore)
 		{
 			highscore = score;
 			snprintf(buf, BUFMAX, "Congratulations!!! you've got high score!");
-			mvprintw(2, 0, buf);
+			mvprintw(3, 0, buf);
 		}
 		snprintf(buf, BUFMAX, "High Score: %d try", highscore);
-		mvprintw(3, 0, buf);
+		mvprintw(5, 0, buf);
 		snprintf(buf, BUFMAX, "Score: %d try", score);
-		mvprintw(4, 0, buf);
-		snprintf(buf, BUFMAX, "answer is: %.2d", num);
 		mvprintw(6, 0, buf);
 		snprintf(buf, BUFMAX, "Press 'R' key to Retry game");
-		mvprintw(7, 0, buf);
+		mvprintw(8, 0, buf);
 	}
 
 	// draw2();
@@ -271,11 +277,11 @@ void draw_title()
 int main()
 {
 	
-	// 초기화를 진행합니다.
-	init();
 	// 타이틀 화면 표시
 	draw_title();
 	getch();
+	// 초기화를 진행합니다.
+	init();
 	clear();
 	// 게임화면 표시
 	draw2();
