@@ -23,7 +23,7 @@ typedef struct s_format {
 
 // 전역 서식 변수 정의
 t_format normal_num = { 0, 1 };
-t_format excluded_num = { A_DIM, 2 };
+t_format excluded_num = { 0, 2 };
 t_format wrong_num = { 0, 3 };
 
 int ans, upto, downto, score, highscore = 100;
@@ -105,9 +105,10 @@ void draw2()
 
 	// downto 비활성화 부분
 	// A_DIM 이 적용되지 않고있음...어째서...?
-	attron(A_DIM);
-	attron(COLOR_PAIR(1));
-	// apply_format(excluded_num);
+	// ㄴ터미널 문제였음, 지원하는 터미널이 있고 안되는 터미널이 있다...
+	// attron(A_DIM);
+	// attron(COLOR_PAIR(2));
+	apply_format(excluded_num);
 	for (int num = 0; num < downto; num++)
 	{
 		int x, y;
@@ -117,9 +118,9 @@ void draw2()
 		snprintf(buf, BUFMAX, "%.2d", num);
 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
-	attroff(A_DIM);
-	attroff(COLOR_PAIR(1));
-	// remove_format(excluded_num);
+	// attroff(A_DIM);
+	// attroff(COLOR_PAIR(2));
+	remove_format(excluded_num);
 
 	// 선택한 부분
 	// attron(COLOR_PAIR(3));
@@ -321,8 +322,9 @@ void init()
 	keypad(stdscr, TRUE);
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 	start_color();
+	init_color(8, 500, 500, 500); // A_DIM 대신 회색을 추가한다
 	init_pair(1, COLOR_BLACK, COLOR_WHITE);
-	init_pair(2, COLOR_WHITE, COLOR_BLACK);
+	init_pair(2, 8, COLOR_BLACK);
 	init_pair(3, COLOR_BLACK, COLOR_RED);
 }
 
