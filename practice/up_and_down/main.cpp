@@ -15,18 +15,75 @@
 #define DEFAULT_UPTO 100
 #define DEFAULT_DOWNTO -1
 
+// 서식 구조체 정의
+typedef struct s_format {
+	attr_t attrs;
+	short color;
+} t_format;
+
+// 전역 서식 변수 정의
+t_format normal_num = { 0, 1 };
+t_format excluded_num = { A_DIM, 2 };
+t_format wrong_num = { 0, 3 };
+
 int ans, upto, downto, score, highscore = 100;
 
 void init();
 
-void draw_nums(int from, int to, attr_t *attr, int *color)
+// void draw_nums(int from, int to, attr_t *attr, int *color)
+// {
+// 	char buf[BUFMAX];
+	
+// 	if (attr != NULL)
+// 		attron(*attr);
+// 	if (color != NULL)
+// 		attron(COLOR_PAIR(*color));
+	
+// 	for (int num = from; num <= to; num++)
+// 	{
+// 		int x, y;
+
+// 		x = num % 10;
+// 		y = num / 10;
+// 		snprintf(buf, BUFMAX, "%.2d", num);
+// 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+// 	}
+
+// 	if (attr != NULL)
+// 		attroff(*attr);
+// 	if (color != NULL)
+// 		attroff(COLOR_PAIR(*color));
+// }
+
+// 서식 적용 함수
+void apply_format(t_format fmt)
+{
+	if (fmt.attrs) attron(fmt.attrs);
+	if (fmt.color) attron(COLOR_PAIR(fmt.color));
+}
+
+// 서식 해제 함수
+void remove_format(t_format fmt)
+{
+	if (fmt.attrs) attroff(fmt.attrs);
+	if (fmt.color) attroff(COLOR_PAIR(fmt.color));
+}
+
+// 상황별로 다른 서식을 받는다
+// 선택한 숫자가
+// 1. 정답보다 작다
+// 2. 정답보다 크다
+// 3. 정답과 같다
+// 셋 중에 한 가지 상태만 가능함으로
+// 해당 범위만 해당 서식으로 그려준다
+// 이전 범위를 중복해서 그릴 필요가 없어지고
+// 원래 기획 의도대로 이전에 선택한 오답 표시도 남는다
+void draw_nums(int from, int to, t_format fmt)
 {
 	char buf[BUFMAX];
 	
-	if (attr != NULL)
-		attron(*attr);
-	if (color != NULL)
-		attron(COLOR_PAIR(*color));
+	if (fmt.attrs) attron(fmt.attrs);
+	if (fmt.color) attron(COLOR_PAIR(fmt.color));
 	
 	for (int num = from; num <= to; num++)
 	{
@@ -38,10 +95,8 @@ void draw_nums(int from, int to, attr_t *attr, int *color)
 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
 
-	if (attr != NULL)
-		attroff(*attr);
-	if (color != NULL)
-		attroff(COLOR_PAIR(*color));
+	if (fmt.attrs) attroff(fmt.attrs);
+	if (fmt.color) attroff(COLOR_PAIR(fmt.color));
 }
 
 void draw2()
@@ -49,8 +104,10 @@ void draw2()
 	char buf[BUFMAX];
 
 	// downto 비활성화 부분
+	// A_DIM 이 적용되지 않고있음...어째서...?
 	attron(A_DIM);
-	attron(COLOR_PAIR(2));
+	attron(COLOR_PAIR(1));
+	// apply_format(excluded_num);
 	for (int num = 0; num < downto; num++)
 	{
 		int x, y;
@@ -61,10 +118,12 @@ void draw2()
 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
 	attroff(A_DIM);
-	attroff(COLOR_PAIR(2));
+	attroff(COLOR_PAIR(1));
+	// remove_format(excluded_num);
 
 	// 선택한 부분
-	attron(COLOR_PAIR(3));
+	// attron(COLOR_PAIR(3));
+	apply_format(wrong_num);
 	if (downto >= 0)
 	{
 		int x, y;
@@ -74,10 +133,12 @@ void draw2()
 		snprintf(buf, BUFMAX, "%.2d", downto);
 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
-	attroff(COLOR_PAIR(3));
+	// attroff(COLOR_PAIR(3));
+	remove_format(wrong_num);
 
 	// 활성화 부분
-	attron(COLOR_PAIR(1));
+	// attron(COLOR_PAIR(1));
+	apply_format(normal_num);
 	for (int num = downto + 1; num < upto; num++)
 	{
 		int x, y;
@@ -87,10 +148,12 @@ void draw2()
 		snprintf(buf, BUFMAX, "%.2d", num);
 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
-	attroff(COLOR_PAIR(1));
+	// attroff(COLOR_PAIR(1));
+	remove_format(normal_num);
 
 	// 선택한 부분
-	attron(COLOR_PAIR(3));
+	// attron(COLOR_PAIR(3));
+	apply_format(wrong_num);
 	if (upto <= 99)
 	{
 		int x, y;
@@ -100,11 +163,13 @@ void draw2()
 		snprintf(buf, BUFMAX, "%.2d", upto);
 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
-	attroff(COLOR_PAIR(3));
+	// attroff(COLOR_PAIR(3));
+	remove_format(wrong_num);
 
 	// upto 비활성화 부분
-	attron(A_DIM);
-	attron(COLOR_PAIR(2));
+	// attron(A_DIM);
+	// attron(COLOR_PAIR(2));
+	apply_format(excluded_num);
 	for (int num = upto + 1; num < 100; num++)
 	{
 		int x, y;
@@ -114,8 +179,9 @@ void draw2()
 		snprintf(buf, BUFMAX, "%.2d", num);
 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
-	attroff(A_DIM);
-	attroff(COLOR_PAIR(2));
+	// attroff(A_DIM);
+	// attroff(COLOR_PAIR(2));
+	remove_format(excluded_num);
 
 	snprintf(buf, BUFMAX, "Try: %d", score);
 	mvprintw(11, 0, buf);
@@ -277,11 +343,13 @@ void draw_title()
 int main()
 {
 	
-	// 타이틀 화면 표시
-	draw_title();
-	getch();
 	// 초기화를 진행합니다.
 	init();
+	// 타이틀 화면 표시
+	// initscr()이 init()함수에 있기 때문에 순서에 주의 해야함
+	// 추후 init() 함수 쪼갤 예정...
+	draw_title();
+	getch();
 	clear();
 	// 게임화면 표시
 	draw2();
