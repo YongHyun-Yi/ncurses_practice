@@ -187,7 +187,7 @@ void draw2()
 	snprintf(buf, BUFMAX, "Try: %d", score);
 	mvprintw(11, 0, buf);
 
-	refresh();
+	// refresh();
 }
 
 void click_handler(MEVENT &mevent)
@@ -208,6 +208,8 @@ void click_handler(MEVENT &mevent)
 		return ;
 
 	++score;
+	snprintf(buf, BUFMAX, "Try: %d", score);
+	mvprintw(11, 0, buf);
 
 	// 디버그 출력
 	// snprintf(buf, BUFMAX, "mouse event detected! x: %d, y: %d", mevent.x, mevent.y);
@@ -221,16 +223,22 @@ void click_handler(MEVENT &mevent)
 		// 디버그 출력
 		// snprintf(buf, BUFMAX, "%.2d is smaller than answer", num);
 		// mvprintw(13, 0, buf);
+		draw_nums(downto + 1, num - 1, excluded_num);
+		draw_nums(num, num, wrong_num);
 		downto = num;
-		draw2();
+		// draw2();
+		refresh();
 	}
 	else if (num > ans)
 	{
 		// 디버그 출력
 		// snprintf(buf, BUFMAX, "%.2d is greater than answer", num);
 		// mvprintw(13, 0, buf);
+		draw_nums(num + 1, upto - 1, excluded_num);
+		draw_nums(num, num, wrong_num);
 		upto = num;
-		draw2();
+		// draw2();
+		refresh();
 	}
 	else
 	{
@@ -271,11 +279,12 @@ void draw()
 		}
 	}
 	attroff(COLOR_PAIR(1));
-	refresh();
+	// refresh();
 }
 
 void run()
 {
+	char buf[BUFMAX];
 	int c = getch();
 
 	switch(c)
@@ -295,7 +304,10 @@ void run()
 		case 'r':
 			clear();
 			init();
-			draw2();
+			// draw2();
+			draw_nums(downto, upto - 1, normal_num);
+			snprintf(buf, BUFMAX, "Try: %d", score);
+			mvprintw(11, 0, buf);
 			break;
 	}
 
@@ -344,7 +356,7 @@ void draw_title()
 
 int main()
 {
-	
+	char buf[BUFMAX];	
 	// 초기화를 진행합니다.
 	init();
 	// 타이틀 화면 표시
@@ -354,7 +366,10 @@ int main()
 	getch();
 	clear();
 	// 게임화면 표시
-	draw2();
+	// draw2();
+	draw_nums(downto, upto - 1, normal_num);
+	snprintf(buf, BUFMAX, "Try: %d", score);
+	mvprintw(11, 0, buf);
 
 	// 계속해서 반복되는 핵심 부분입니다.
 	while(1)
