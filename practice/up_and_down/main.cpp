@@ -193,6 +193,11 @@ void handle_input()
 			clear();
 			game_settup();
 			break;
+		
+		// 종료
+		case 'q':
+			endwin();
+			exit(0);
 	}
 }
 
