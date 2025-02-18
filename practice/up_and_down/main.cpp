@@ -56,14 +56,6 @@ void remove_format(t_format fmt)
 }
 
 // 상황별로 다른 서식을 받는다
-// 선택한 숫자가
-// 1. 정답보다 작다
-// 2. 정답보다 크다
-// 3. 정답과 같다
-// 셋 중에 한 가지 상태만 가능함으로
-// 해당 범위만 해당 서식으로 그려준다
-// 이전 범위를 중복해서 그릴 필요가 없어지고
-// 원래 기획 의도대로 이전에 선택한 오답 표시도 남는다
 void draw_nums(int from, int to, t_format fmt)
 {
 	apply_format(fmt);
@@ -151,8 +143,6 @@ void update_game()
 
 void click_handler(MEVENT &mevent)
 {
-	std::stringstream ss;
-	char buf[BUFMAX];
 	int x, y, num;
 
 	// 공백 클릭은 무시한다
@@ -226,10 +216,6 @@ void game_settup()
 
 void init()
 {
-	// 0 ~ 99 사이의 무작위 숫자를 생성합니다.
-	srand(time(0));
-	ans = rand() % 100 + 1;
-
 	// ncurses 의 초기화 함수들을 설정합니다.
 	setlocale(LC_CTYPE, "");
 	initscr();
@@ -276,7 +262,4 @@ int main()
 
 	// 계속해서 반복되는 핵심 부분입니다.
 	run();
-
-	// ncurses 모드를 종료합니다.
-	endwin();
 }
