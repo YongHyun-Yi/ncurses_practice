@@ -159,7 +159,7 @@ void run()
 		// 재시작
 		case 'r':
 			clear();
-			init();
+			game_settup();
 			draw_nums(downto, upto - 1, normal_num);
 			snprintf(buf, BUFMAX, "Try: %d", score);
 			mvprintw(11, 0, buf);
@@ -167,16 +167,23 @@ void run()
 	}
 }
 
-void init()
+void game_settup()
 {
 	// 0 ~ 99 사이의 무작위 숫자를 생성합니다.
 	srand(time(0));
 	ans = rand() % 100 + 1;
 
-	// 재시작을 위해 upto, downto 초기화를 init에서 수행
+	// 상한선, 하한선, 점수 변수 초기화
 	upto = DEFAULT_UPTO;
 	downto = DEFAULT_DOWNTO;
 	score = 0;
+}
+
+void init()
+{
+	// 0 ~ 99 사이의 무작위 숫자를 생성합니다.
+	srand(time(0));
+	ans = rand() % 100 + 1;
 
 	// ncurses 의 초기화 함수들을 설정합니다.
 	setlocale(LC_CTYPE, "");
@@ -221,6 +228,7 @@ int main()
 
 	// 게임화면 표시
 	clear();
+	game_settup();
 	draw_nums(downto, upto - 1, normal_num);
 	snprintf(buf, BUFMAX, "Try: %d", score);
 	mvprintw(11, 0, buf);
