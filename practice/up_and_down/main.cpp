@@ -21,14 +21,19 @@ typedef struct s_format {
 	short color;
 } t_format;
 
+// 출력용 char 배열
+char buf[BUFMAX];
+
 // 전역 서식 변수 정의
 t_format normal_num = { 0, 1 };
 t_format excluded_num = { 0, 2 };
 t_format wrong_num = { 0, 3 };
 
-int ans, upto, downto, score, highscore = 100;
+int ans, upto, downto, score, highscore = 100, game_state;
+int selected_num = -1;
 
 void init();
+void game_settup();
 
 // 디버그 출력
 // 마우스 위치
@@ -61,10 +66,7 @@ void remove_format(t_format fmt)
 // 원래 기획 의도대로 이전에 선택한 오답 표시도 남는다
 void draw_nums(int from, int to, t_format fmt)
 {
-	char buf[BUFMAX];
-	
-	if (fmt.attrs) attron(fmt.attrs);
-	if (fmt.color) attron(COLOR_PAIR(fmt.color));
+	apply_format(fmt);
 	
 	for (int num = from; num <= to; num++)
 	{
@@ -76,9 +78,76 @@ void draw_nums(int from, int to, t_format fmt)
 		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
 
-	if (fmt.attrs) attroff(fmt.attrs);
-	if (fmt.color) attroff(COLOR_PAIR(fmt.color));
+	remove_format(fmt);
 }
+
+// 상태값에 따라 화면을 렌더링
+// 0: 초기
+// 1: 오답, 작음
+// 2: 오답, 큼
+// 3: 정답
+void draw_game()
+{
+	snprintf(buf, BUFMAX, "Try: %d", score);
+	mvprintw(11, 0, buf);
+
+	switch (game_state)
+	{
+		case 0:
+			draw_nums(downto, upto - 1, normal_num);
+			break;
+		
+		case 1:
+			draw_nums(downto + 1, selected_num - 1, excluded_num);
+			draw_nums(selected_num, selected_num, wrong_num);
+			downto = selected_num;
+			break;
+		
+		case 2:
+			draw_nums(selected_num + 1, upto - 1, excluded_num);
+			draw_nums(selected_num, selected_num, wrong_num);
+			upto = selected_num;
+			break;
+
+		case 3:
+			clear();
+			snprintf(buf, BUFMAX, "Game Over");
+			mvprintw(0, 0, buf);
+			snprintf(buf, BUFMAX, "answer is: %.2d", ans);
+			mvprintw(1, 0, buf);
+			if (score < highscore)
+			{
+				highscore = score;
+				snprintf(buf, BUFMAX, "Congratulations!!! you've got high score!");
+				mvprintw(3, 0, buf);
+			}
+			snprintf(buf, BUFMAX, "High Score: %d try", highscore);
+			mvprintw(5, 0, buf);
+			snprintf(buf, BUFMAX, "Score: %d try", score);
+			mvprintw(6, 0, buf);
+			snprintf(buf, BUFMAX, "Press 'R' key to Retry game");
+			mvprintw(8, 0, buf);
+			break;
+	}
+
+	selected_num = -1;
+}
+
+void update_game()
+{
+	if (selected_num == -1)
+		return;
+	
+	++score;
+
+	if (selected_num < ans)
+		game_state = 1;
+	else if (selected_num > ans)
+		game_state = 2;
+	else
+		game_state = 3;
+}
+
 
 void click_handler(MEVENT &mevent)
 {
@@ -89,6 +158,7 @@ void click_handler(MEVENT &mevent)
 	// 공백 클릭은 무시한다
 	if (mevent.x % 3 == 2)
 		return ;
+
 	x = mevent.x / (CHAR_WIDTH + CHAR_MARGIN);
 	y = mevent.y * 10;
 	num = x + y;
@@ -96,51 +166,12 @@ void click_handler(MEVENT &mevent)
 	// 제외된 범위 클릭은 무시한다
 	if (num <= downto || num >= upto)
 		return ;
-
-	++score;
-
-	snprintf(buf, BUFMAX, "Try: %d", score);
-	mvprintw(11, 0, buf);
-
-	if (num < ans)
-	{
-		draw_nums(downto + 1, num - 1, excluded_num);
-		draw_nums(num, num, wrong_num);
-		downto = num;
-		refresh();
-	}
-	else if (num > ans)
-	{
-		draw_nums(num + 1, upto - 1, excluded_num);
-		draw_nums(num, num, wrong_num);
-		upto = num;
-		refresh();
-	}
-	else
-	{
-		clear();
-		snprintf(buf, BUFMAX, "Game Over");
-		mvprintw(0, 0, buf);
-		snprintf(buf, BUFMAX, "answer is: %.2d", num);
-		mvprintw(1, 0, buf);
-		if (score < highscore)
-		{
-			highscore = score;
-			snprintf(buf, BUFMAX, "Congratulations!!! you've got high score!");
-			mvprintw(3, 0, buf);
-		}
-		snprintf(buf, BUFMAX, "High Score: %d try", highscore);
-		mvprintw(5, 0, buf);
-		snprintf(buf, BUFMAX, "Score: %d try", score);
-		mvprintw(6, 0, buf);
-		snprintf(buf, BUFMAX, "Press 'R' key to Retry game");
-		mvprintw(8, 0, buf);
-	}
+	
+	selected_num = num;
 }
 
-void run()
+void handle_input()
 {
-	char buf[BUFMAX];
 	int c = getch();
 
 	switch(c)
@@ -156,14 +187,22 @@ void run()
 					click_handler(mevent);
 			}
 			break;
+		
 		// 재시작
 		case 'r':
 			clear();
 			game_settup();
-			draw_nums(downto, upto - 1, normal_num);
-			snprintf(buf, BUFMAX, "Try: %d", score);
-			mvprintw(11, 0, buf);
 			break;
+	}
+}
+
+void run()
+{
+	while(1)
+	{
+		handle_input();
+		update_game();
+		draw_game();
 	}
 }
 
@@ -177,6 +216,7 @@ void game_settup()
 	upto = DEFAULT_UPTO;
 	downto = DEFAULT_DOWNTO;
 	score = 0;
+	game_state = 0;
 }
 
 void init()
@@ -216,8 +256,6 @@ void draw_title()
 
 int main()
 {
-	char buf[BUFMAX];	
-
 	// 초기화를 진행합니다.
 	init();
 
@@ -229,16 +267,10 @@ int main()
 	// 게임화면 표시
 	clear();
 	game_settup();
-	draw_nums(downto, upto - 1, normal_num);
-	snprintf(buf, BUFMAX, "Try: %d", score);
-	mvprintw(11, 0, buf);
+	draw_game();
 
 	// 계속해서 반복되는 핵심 부분입니다.
-	while(1)
-	{
-		// 화면을 렌더링합니다.
-		run();
-	}
+	run();
 
 	// ncurses 모드를 종료합니다.
 	endwin();
