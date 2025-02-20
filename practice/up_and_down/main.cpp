@@ -245,11 +245,48 @@ void draw_title()
 	refresh();
 }
 
+void test()
+{
+	setlocale(LC_CTYPE, "");
+	initscr();
+	curs_set(0);
+	noecho();
+
+	// refresh();
+
+	WINDOW *win;
+	PANEL *panel;
+
+	win = newwin(5, 7, 3, 3);
+	panel = new_panel(win);
+	box(win, 0, 0);
+	mvwprintw(win, 1, 2, "This");
+	mvwprintw(win, 2, 3, "is");
+	mvwprintw(win, 3, 2, "win3");
+	// wrefresh(win);
+	update_panels();
+	doupdate();
+
+	getch();
+
+	move_panel(panel, 3, 6);
+	// mvwin(win, 3, 6);
+	// wrefresh(win);
+	update_panels();
+	doupdate();
+
+	getch();
+	
+	endwin();
+	exit(0);
+}
+
 int main()
 {
 	// 초기화를 진행합니다.
 	init();
 
+	test();
 	// 타이틀 화면 표시
 	draw_title();
 
