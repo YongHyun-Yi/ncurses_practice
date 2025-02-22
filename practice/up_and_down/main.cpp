@@ -9,11 +9,15 @@
 
 #include <sstream>
 
+#define MAXWIDTH 56
+#define MAXHEIGHT 17
+
 #define CHAR_WIDTH 2
 #define CHAR_MARGIN 1
 #define BUFMAX 512
 #define DEFAULT_UPTO 100
 #define DEFAULT_DOWNTO -1
+
 
 // 서식 구조체 정의
 typedef struct s_format {
@@ -28,6 +32,7 @@ char buf[BUFMAX];
 t_format normal_num = { 0, 1 };
 t_format excluded_num = { 0, 2 };
 t_format wrong_num = { 0, 3 };
+t_format correct_num = { 0, 4 };
 
 int ans, upto, downto, score, highscore = 100, game_state;
 int selected_num = -1;
@@ -226,9 +231,84 @@ void init()
 
 	start_color();
 	init_color(8, 500, 500, 500); // A_DIM 대신 회색을 추가한다
-	init_pair(1, COLOR_BLACK, COLOR_WHITE);
-	init_pair(2, 8, COLOR_BLACK);
-	init_pair(3, COLOR_BLACK, COLOR_RED);
+	init_pair(1, COLOR_BLACK, COLOR_WHITE); // Normal Number
+	init_pair(2, 8, COLOR_BLACK); // Exclude Number
+	init_pair(3, COLOR_BLACK, COLOR_RED); // Wrong Number
+	init_pair(4, COLOR_BLACK, COLOR_GREEN); // Correct Number
+}
+
+/*
+
+ Up and Down                              by. YHY_GAMES
+ ──────────────────────────────────────────────────────
+ ┌───────────────────────────────┐ ┌──────────────────┐
+ │ 00 01 02 03 04 05 06 07 08 09 │ │ best       4 try │
+ │ 10 11 12 13 14 15 16 17 18 19 │ │ score      1 try │
+ │ 20 21 22 23 24 25 26 27 28 29 │ └──────────────────┘
+ │ 30 31 32 33 34 35 36 37 38 39 │          up
+ │ 40 41 42 43 44 45 46 47 48 49 │       < down >
+ │ 50 51 52 53 54 55 56 57 58 59 │ ┌──────────────────┐
+ │ 60 61 62 63 64 65 66 67 68 69 │ │                  │
+ │ 70 71 72 73 74 75 76 77 78 79 │ │    52  greater   │
+ │ 80 81 82 83 84 85 86 87 88 89 │ │   than answer    │
+ │ 90 91 92 93 94 95 96 97 98 99 │ │                  │
+ └───────────────────────────────┘ └──────────────────┘
+ ──────────────────────────────────────────────────────
+
+( 56 x 17 )
+*/
+void draw_placeholder()
+{
+	// background
+	mvprintw(1, 1, "Up and Down");
+	mvprintw(1, 43, "by. YHY_GAMES");
+	mvprintw(2, 1, "──────────────────────────────────────────────────────");
+	mvprintw(MAXHEIGHT - 2, 1, "──────────────────────────────────────────────────────");
+	
+	// number board
+	mvprintw(3, 1, "┌───────────────────────────────┐");
+	for (int i = 4; i < 14; i++)
+	{
+		mvprintw(i, 1, "│");
+		mvprintw(i, 33, "│");
+	}
+	mvprintw(14, 1, "└───────────────────────────────┘");
+	for (int num = 0; num <= 99; num++)
+	{
+		int x, y;
+
+		x = num % 10 + 1;
+		y = num / 10 + 4;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+
+	// score board
+	mvprintw(3, 35, "┌──────────────────┐");
+	for (int i = 4; i < 6; i++)
+	{
+		mvprintw(i, 35, "│");
+		mvprintw(i, 54, "│");
+	}
+	mvprintw(6, 35, "└──────────────────┘");
+
+	// up down
+	mvprintw(7, 44, "UP");
+	mvprintw(8, 43, "DOWN");
+
+	// info board
+	mvprintw(9, 35, "┌──────────────────┐");
+	for (int i = 10; i < 14; i++)
+	{
+		mvprintw(i, 35, "│");
+		mvprintw(i, 54, "│");
+	}
+	mvprintw(14, 35, "└──────────────────┘");
+
+	getch();
+	
+	endwin();
+	exit(0);
 }
 
 void draw_title()
@@ -251,7 +331,7 @@ void test()
 	initscr();
 	curs_set(0);
 	noecho();
-
+	
 	// refresh();
 
 	WINDOW *win;
@@ -286,7 +366,7 @@ int main()
 	// 초기화를 진행합니다.
 	init();
 
-	test();
+	draw_placeholder();
 	// 타이틀 화면 표시
 	draw_title();
 
