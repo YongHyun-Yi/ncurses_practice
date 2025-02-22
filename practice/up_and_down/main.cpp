@@ -306,22 +306,33 @@ void draw_placeholder()
 	mvprintw(14, 35, "└──────────────────┘");
 
 	getch();
-	
-	endwin();
-	exit(0);
 }
 
 void draw_title()
 {
-	mvaddstr(0, 0,
-		"   __  __         ___              __   ____                    \n"
-		"  / / / /___     /   |  ____  ____/ /  / __ \\____ _      ______ \n"
-		" / / / / __ \\   / /| | / __ \\/ __  /  / / / / __ \\ | /| / / __ \\\n"
-		"/ /_/ / /_/ /  / ___ |/ / / / /_/ /  / /_/ / /_/ / |/ |/ / / / /\n"
-		"\\____/ .___/  /_/  |_/_/ /_/\\__,_/  /_____/\\____/|__/|__/_/ /_/ \n"
-		"    /_/                                                         \n"
-		"                      Press AnyKey to Start\n"
-	);
+	int offset_x = 2, offset_y = 3;
+	const char *title[] = {
+		"   __  __         ___              __   ____                    ",
+		"  / / / /___     /   |  ____  ____/ /  / __ \\____ _      ______ ",
+		" / / / / __ \\   / /| | / __ \\/ __  /  / / / / __ \\ | /| / / __ \\",
+		"/ /_/ / /_/ /  / ___ |/ / / / /_/ /  / /_/ / /_/ / |/ |/ / / / /",
+		"\\____/ .___/  /_/  |_/_/ /_/\\__,_/  /_____/\\____/|__/|__/_/ /_/ ",
+		"    /_/                                                         ",
+		"                                                                ",
+		"                                                 by. YHY_GAMES  ",
+		"                                                                ",
+		"                                                                ",
+		"                                                                "
+	};
+
+	for (int i = 0; i < 11; i++)
+	{
+		mvprintw(i + offset_y, offset_x, "%s", title[i]);
+	}
+	attron(A_BLINK);
+	mvprintw(11 + offset_y, offset_x, "                    Press AnyKey to Start                       ");
+	attroff(A_BLINK);
+	
 	refresh();
 }
 
@@ -366,7 +377,7 @@ int main()
 	// 초기화를 진행합니다.
 	init();
 
-	draw_placeholder();
+	// draw_placeholder();
 	// 타이틀 화면 표시
 	draw_title();
 
