@@ -17,6 +17,7 @@
 #define BUFMAX 512
 #define DEFAULT_UPTO 100
 #define DEFAULT_DOWNTO -1
+#define DEFAULT_HIGHSCORE 100
 
 
 // 서식 구조체 정의
@@ -303,6 +304,7 @@ void draw_placeholder()
 	move_panel(p_number, 2 + offset_y_ingame, offset_x_ingame);
 
 	// score board
+	int offset_score = 0;
 	mvwprintw(w_score, 0, 0, "┌──────────────────┐");
 	for (int i = 1; i < 3; i++)
 	{
@@ -310,6 +312,26 @@ void draw_placeholder()
 		mvwprintw(w_score, i, 19, "│");
 	}
 	mvwprintw(w_score, 3, 0, "└──────────────────┘");
+
+	mvwprintw(w_score, 1, 2, "best");
+	snprintf(buf, BUFMAX, "%d", highscore);
+	if (highscore < 10)
+		offset_score = 1;
+	else if (highscore == DEFAULT_HIGHSCORE)
+	{
+		snprintf(buf, BUFMAX, "-");
+		offset_score = 1;
+	}
+	mvwprintw(w_score, 1, 12 + offset_score, buf);
+	mvwprintw(w_score, 1, 15, "try");
+
+	mvwprintw(w_score, 2, 2, "score");
+	snprintf(buf, BUFMAX, "%d", score);
+	if (score < 10)
+		offset_score = 1;
+	mvwprintw(w_score, 2, 12 + offset_score, buf);
+	mvwprintw(w_score, 2, 15, "try");
+
 	move_panel(p_score, 2 + offset_y_ingame, 34 + offset_x_ingame);
 
 	// up down
