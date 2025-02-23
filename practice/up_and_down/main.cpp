@@ -261,63 +261,74 @@ void init()
 */
 void draw_placeholder()
 {
+	int offset_x_ingame = 6, offset_y_ingame = 1;
+
 	WINDOW *w_background = newwin(15, 54, 0, 0);
-	// WINDOW *w_number = newwin(12, 33, 0, 0);
-	// WINDOW *w_score = newwin(4, 20, 0, 0);
-	// WINDOW *w_info = newwin(6, 20, 0, 0);
+	WINDOW *w_number = newwin(12, 33, 0, 0);
+	WINDOW *w_score = newwin(4, 20, 0, 0);
+	WINDOW *w_updown = newwin(2, 8, 0, 0);
+	WINDOW *w_info = newwin(6, 20, 0, 0);
 
 	PANEL *p_background = new_panel(w_background);
-	// PANEL *p_number = new_panel(w_number);
-	// PANEL *p_score = new_panel(w_score);
-	// PANEL *p_winfo = new_panel(w_info);
-
+	PANEL *p_number = new_panel(w_number);
+	PANEL *p_score = new_panel(w_score);
+	PANEL *p_updown = new_panel(w_updown);
+	PANEL *p_info = new_panel(w_info);
 
 	// background
-	mvprintw(1, 1, "Up and Down");
-	mvprintw(1, 43, "by. YHY_GAMES");
-	mvprintw(2, 1, "──────────────────────────────────────────────────────");
-	mvprintw(MAXHEIGHT - 2, 1, "──────────────────────────────────────────────────────");
+	mvwprintw(w_background, 0, 0, "Up and Down");
+	mvwprintw(w_background, 0, 41, "by. YHY_GAMES");
+	mvwprintw(w_background, 1, 0, "──────────────────────────────────────────────────────");
+	mvwprintw(w_background, 14, 0, "──────────────────────────────────────────────────────");
+	move_panel(p_background, offset_y_ingame, offset_x_ingame);
 	
-	// // number board
-	// mvprintw(3, 1, "┌───────────────────────────────┐");
-	// for (int i = 4; i < 14; i++)
-	// {
-	// 	mvprintw(i, 1, "│");
-	// 	mvprintw(i, 33, "│");
-	// }
-	// mvprintw(14, 1, "└───────────────────────────────┘");
-	// for (int num = 0; num <= 99; num++)
-	// {
-	// 	int x, y;
+	// number board
+	int offset_num_x = 1, offset_num_y = 1;
+	mvwprintw(w_number, 0, 0, "┌───────────────────────────────┐");
+	for (int i = 1; i < 11; i++)
+	{
+		mvwprintw(w_number, i, 0, "│");
+		mvwprintw(w_number, i, 32, "│");
+	}
+	mvwprintw(w_number, 11, 0, "└───────────────────────────────┘");
+	for (int num = 0; num <= 99; num++)
+	{
+		int x, y;
 
-	// 	x = num % 10 + 1;
-	// 	y = num / 10 + 4;
-	// 	snprintf(buf, BUFMAX, "%.2d", num);
-	// 	mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
-	// }
+		x = num % 10 + offset_num_x;
+		y = num / 10 + offset_num_y;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+	move_panel(p_number, 2 + offset_y_ingame, offset_x_ingame);
 
-	// // score board
-	// mvprintw(3, 35, "┌──────────────────┐");
-	// for (int i = 4; i < 6; i++)
-	// {
-	// 	mvprintw(i, 35, "│");
-	// 	mvprintw(i, 54, "│");
-	// }
-	// mvprintw(6, 35, "└──────────────────┘");
+	// score board
+	mvwprintw(w_score, 0, 0, "┌──────────────────┐");
+	for (int i = 1; i < 3; i++)
+	{
+		mvwprintw(w_score, i, 0, "│");
+		mvwprintw(w_score, i, 19, "│");
+	}
+	mvwprintw(w_score, 3, 0, "└──────────────────┘");
+	move_panel(p_score, 2 + offset_y_ingame, 34 + offset_x_ingame);
 
-	// // up down
-	// mvprintw(7, 44, "UP");
-	// mvprintw(8, 43, "DOWN");
+	// up down
+	mvwprintw(w_updown, 0, 3, "UP");
+	mvwprintw(w_updown, 1, 2, "DOWN");
+	move_panel(p_updown, 6 + offset_y_ingame, 40 + offset_x_ingame);
 
-	// // info board
-	// mvprintw(9, 35, "┌──────────────────┐");
-	// for (int i = 10; i < 14; i++)
-	// {
-	// 	mvprintw(i, 35, "│");
-	// 	mvprintw(i, 54, "│");
-	// }
-	// mvprintw(14, 35, "└──────────────────┘");
+	// info board
+	mvwprintw(w_info, 0, 0, "┌──────────────────┐");
+	for (int i = 1; i < 5; i++)
+	{
+		mvwprintw(w_info, i, 0, "│");
+		mvwprintw(w_info, i, 19, "│");
+	}
+	mvwprintw(w_info, 5, 0, "└──────────────────┘");
+	move_panel(p_info, 8 + offset_y_ingame, 34 + offset_x_ingame);
 
+	update_panels();
+	doupdate();
 	getch();
 }
 
