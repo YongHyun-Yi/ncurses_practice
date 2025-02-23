@@ -38,6 +38,22 @@ t_format correct_num = { 0, 4 };
 int ans, upto, downto, score, BEST = 100, game_state;
 int selected_num = -1;
 
+WINDOW *w_canvas;
+WINDOW *w_title;
+WINDOW *w_background;
+WINDOW *w_number;
+WINDOW *w_score;
+WINDOW *w_updown;
+WINDOW *w_info;
+
+PANEL *p_canvas;
+PANEL *p_title;
+PANEL *p_background;
+PANEL *p_number;
+PANEL *p_score;
+PANEL *p_updown;
+PANEL *p_info;
+
 void init();
 void game_settup();
 
@@ -82,16 +98,46 @@ void draw_nums(int from, int to, t_format fmt)
 // version2
 // 모든 요소들을 창으로 생성 및 패널로 관리
 // 출력할때는 특정 창에 출력후 doupdate 호출
+// - w_background: 맨 처음에 한 번만 그려지면 됨
 // - w_number: 제외되는 숫자, 오답 or 정답
 // - w_score: 오답일경우 ++된 값을 업데이트, 정답일경우 best와 비교
 // - w_updown: 오답일경우 비교해서 up or down
 // - w_info: 오답일경우 greater or lesser, 정답의 경우 축하메세지
+
+// 일단 일부분만 그리지 말고 매번 전부 그리기?
+// 생각이 너무 많아짐;
+// window 별로 렌더링 함수를 만들고
+// 변화가 없으면 넘어가기
+
+// 창과 패널은 맨 처음 한 번만 생성하면 됨
+// draw에서는 특정 좌표에 mvwprintw로 갱신해주면 됨
+// 모든 draw 이후에 doupdate로 한번에 갱신
 
 // 상태값에 따라 화면을 렌더링
 // 0: 초기
 // 1: 오답, 작음
 // 2: 오답, 큼
 // 3: 정답
+
+void draw_w_number()
+{
+	WINDOW *w_number = newwin(12, 33, 0, 0);
+	PANEL *p_number = new_panel(w_number);
+
+	// number board
+	int offset_num_x = 1, offset_num_y = 1;
+	box(w_number, 0, 0);
+	for (int num = 0; num <= 99; num++)
+	{
+		int x, y;
+
+		x = num % 10 + offset_num_x;
+		y = num / 10 + offset_num_y;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+}
+
 void draw_game()
 {
 	snprintf(buf, BUFMAX, "Try: %d", score);
@@ -228,6 +274,94 @@ void game_settup()
 	game_state = 0;
 }
 
+void create_panels()
+{
+	// canvas
+	{
+		w_canvas = newwin(MAXHEIGHT, MAXWIDTH, 0, 0);
+		p_canvas = new_panel(w_canvas);
+		box(w_canvas, 0, 0);
+	}
+
+	// title
+	{
+		int offset_x = 2, offset_y = 3;
+	
+		w_title = newwin(12, 64, 0, 0);
+		p_title = new_panel(w_title);
+	
+		const char *title[] = {
+			"   __  __         ___              __   ____                    ",
+			"  / / / /___     /   |  ____  ____/ /  / __ \\____ _      ______ ",
+			" / / / / __ \\   / /| | / __ \\/ __  /  / / / / __ \\ | /| / / __ \\",
+			"/ /_/ / /_/ /  / ___ |/ / / / /_/ /  / /_/ / /_/ / |/ |/ / / / /",
+			"\\____/ .___/  /_/  |_/_/ /_/\\__,_/  /_____/\\____/|__/|__/_/ /_/ ",
+			"    /_/                                                         "
+	
+		};
+	
+		for (int i = 0; i < 6; i++)
+		{
+			mvwprintw(w_title, i, 0, "%s", title[i]);
+		}
+		mvwprintw(w_title, 7, 49, "by. YHY_GAMES");
+		attron(A_BLINK);
+		mvwprintw(w_title, 11, 22, "Press AnyKey to Start");
+		attroff(A_BLINK);
+		
+		move_panel(p_title, offset_y, offset_x);
+	}
+
+	// game screen contents
+	{
+		int offset_x_ingame = 6, offset_y_ingame = 1;
+	
+		w_background = newwin(15, 54, 0, 0);
+		w_number = newwin(12, 33, 0, 0);
+		w_score = newwin(4, 20, 0, 0);
+		w_updown = newwin(2, 8, 0, 0);
+		w_info = newwin(6, 20, 0, 0);
+	
+		p_background = new_panel(w_background);
+		p_number = new_panel(w_number);
+		p_score = new_panel(w_score);
+		p_updown = new_panel(w_updown);
+		p_info = new_panel(w_info);
+	
+		// background
+		mvwprintw(w_background, 0, 0, "Up and Down");
+		mvwprintw(w_background, 0, 41, "by. YHY_GAMES");
+		mvwprintw(w_background, 1, 0, "──────────────────────────────────────────────────────");
+		mvwprintw(w_background, 14, 0, "──────────────────────────────────────────────────────");
+		move_panel(p_background, offset_y_ingame, offset_x_ingame);
+		hide_panel(p_background);
+	
+		// number board
+		box(w_number, 0, 0);
+		move_panel(p_number, 2 + offset_y_ingame, offset_x_ingame);
+		hide_panel(p_number);
+	
+		// score board
+		box(w_score, 0, 0);
+		move_panel(p_score, 2 + offset_y_ingame, 34 + offset_x_ingame);
+		hide_panel(p_score);
+	
+		// up down
+		mvwprintw(w_updown, 0, 3, "UP");
+		mvwprintw(w_updown, 1, 2, "DOWN");
+		move_panel(p_updown, 6 + offset_y_ingame, 40 + offset_x_ingame);
+		hide_panel(p_updown);
+	
+		// info board
+		box(w_info, 0, 0);
+		move_panel(p_info, 8 + offset_y_ingame, 34 + offset_x_ingame);
+		hide_panel(p_info);
+	}
+
+	update_panels();
+	doupdate();
+}
+
 void init()
 {
 	// ncurses 의 초기화 함수들을 설정합니다.
@@ -293,13 +427,7 @@ void draw_placeholder()
 	
 	// number board
 	int offset_num_x = 1, offset_num_y = 1;
-	mvwprintw(w_number, 0, 0, "┌───────────────────────────────┐");
-	for (int i = 1; i < 11; i++)
-	{
-		mvwprintw(w_number, i, 0, "│");
-		mvwprintw(w_number, i, 32, "│");
-	}
-	mvwprintw(w_number, 11, 0, "└───────────────────────────────┘");
+	box(w_number, 0, 0);
 	for (int num = 0; num <= 99; num++)
 	{
 		int x, y;
@@ -313,13 +441,7 @@ void draw_placeholder()
 
 	// score board
 	int offset_score = 0;
-	mvwprintw(w_score, 0, 0, "┌──────────────────┐");
-	for (int i = 1; i < 3; i++)
-	{
-		mvwprintw(w_score, i, 0, "│");
-		mvwprintw(w_score, i, 19, "│");
-	}
-	mvwprintw(w_score, 3, 0, "└──────────────────┘");
+	box(w_score, 0, 0);
 
 	mvwprintw(w_score, 1, 2, "best");
 	snprintf(buf, BUFMAX, "%d", BEST);
@@ -348,14 +470,14 @@ void draw_placeholder()
 	move_panel(p_updown, 6 + offset_y_ingame, 40 + offset_x_ingame);
 
 	// info board
-	mvwprintw(w_info, 0, 0, "┌──────────────────┐");
-	for (int i = 1; i < 5; i++)
-	{
-		mvwprintw(w_info, i, 0, "│");
-		mvwprintw(w_info, i, 19, "│");
-	}
-	mvwprintw(w_info, 5, 0, "└──────────────────┘");
+	box(w_info, 0, 0);
 	move_panel(p_info, 8 + offset_y_ingame, 34 + offset_x_ingame);
+
+	update_panels();
+	doupdate();
+	getch();
+
+	wclear(w_score);
 
 	update_panels();
 	doupdate();
@@ -366,8 +488,8 @@ void draw_title()
 {
 	int offset_x = 2, offset_y = 3;
 
-	WINDOW *w_title = newwin(12, 64, 0, 0);
-	PANEL *p_title = new_panel(w_title);
+	w_title = newwin(12, 64, 0, 0);
+	p_title = new_panel(w_title);
 
 	const char *title[] = {
 		"   __  __         ___              __   ____                    ",
@@ -441,26 +563,26 @@ int main()
 {
 	// 초기화를 진행합니다.
 	init();
-	test();
 
-	// 캔버스 경계 확인용 창을 생성합니다.
-	WINDOW *w_canvas = newwin(MAXHEIGHT, MAXWIDTH, 0, 0);
-	PANEL *p_canvas = new_panel(w_canvas);
-	box(w_canvas, 0, 0);
+	create_panels();
+
+	getch();
+
+	hide_panel(p_title);
+	
+	game_settup();
+
+	// 게임화면 표시
+	show_panel(p_background);
+	show_panel(p_number);
+	show_panel(p_score);
+	show_panel(p_updown);
+	show_panel(p_info);
+
 	update_panels();
 	doupdate();
 
-	// 타이틀 화면 표시
-	draw_title();
-	
-	draw_placeholder();
 	getch();
-	
-	// 게임화면 표시
-	clear();
-	game_settup();
-	draw_game();
 
-	// 계속해서 반복되는 핵심 부분입니다.
 	run();
 }
