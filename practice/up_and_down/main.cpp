@@ -17,7 +17,7 @@
 #define BUFMAX 512
 #define DEFAULT_UPTO 100
 #define DEFAULT_DOWNTO -1
-#define DEFAULT_HIGHSCORE 100
+#define DEFAULT_BEST 100
 
 
 // 서식 구조체 정의
@@ -35,7 +35,7 @@ t_format excluded_num = { 0, 2 };
 t_format wrong_num = { 0, 3 };
 t_format correct_num = { 0, 4 };
 
-int ans, upto, downto, score, highscore = 100, game_state;
+int ans, upto, downto, score, BEST = 100, game_state;
 int selected_num = -1;
 
 void init();
@@ -79,6 +79,14 @@ void draw_nums(int from, int to, t_format fmt)
 	remove_format(fmt);
 }
 
+// version2
+// 모든 요소들을 창으로 생성 및 패널로 관리
+// 출력할때는 특정 창에 출력후 doupdate 호출
+// - w_number: 제외되는 숫자, 오답 or 정답
+// - w_score: 오답일경우 ++된 값을 업데이트, 정답일경우 best와 비교
+// - w_updown: 오답일경우 비교해서 up or down
+// - w_info: 오답일경우 greater or lesser, 정답의 경우 축하메세지
+
 // 상태값에 따라 화면을 렌더링
 // 0: 초기
 // 1: 오답, 작음
@@ -113,13 +121,13 @@ void draw_game()
 			mvprintw(0, 0, buf);
 			snprintf(buf, BUFMAX, "answer is: %.2d", ans);
 			mvprintw(1, 0, buf);
-			if (score < highscore)
+			if (score < BEST)
 			{
-				highscore = score;
+				BEST = score;
 				snprintf(buf, BUFMAX, "Congratulations!!! you've got high score!");
 				mvprintw(3, 0, buf);
 			}
-			snprintf(buf, BUFMAX, "High Score: %d try", highscore);
+			snprintf(buf, BUFMAX, "High Score: %d try", BEST);
 			mvprintw(5, 0, buf);
 			snprintf(buf, BUFMAX, "Score: %d try", score);
 			mvprintw(6, 0, buf);
@@ -314,10 +322,10 @@ void draw_placeholder()
 	mvwprintw(w_score, 3, 0, "└──────────────────┘");
 
 	mvwprintw(w_score, 1, 2, "best");
-	snprintf(buf, BUFMAX, "%d", highscore);
-	if (highscore < 10)
+	snprintf(buf, BUFMAX, "%d", BEST);
+	if (BEST < 10)
 		offset_score = 1;
-	else if (highscore == DEFAULT_HIGHSCORE)
+	else if (BEST == DEFAULT_BEST)
 	{
 		snprintf(buf, BUFMAX, "-");
 		offset_score = 1;
@@ -394,31 +402,32 @@ void draw_title()
 
 void test()
 {
-	setlocale(LC_CTYPE, "");
-	initscr();
-	curs_set(0);
-	noecho();
-	
-	// refresh();
+	WINDOW *win1;
+	WINDOW *win2;
+	PANEL *panel1;
+	PANEL *panel2;
 
-	WINDOW *win;
-	PANEL *panel;
+	win1 = newwin(5, 7, 3, 4);
+	panel1 = new_panel(win1);
+	box(win1, 0, 0);
+	mvwprintw(win1, 1, 2, "This");
+	mvwprintw(win1, 2, 3, "is");
+	mvwprintw(win1, 3, 2, "win1");
 
-	win = newwin(5, 7, 3, 3);
-	panel = new_panel(win);
-	box(win, 0, 0);
-	mvwprintw(win, 1, 2, "This");
-	mvwprintw(win, 2, 3, "is");
-	mvwprintw(win, 3, 2, "win3");
-	// wrefresh(win);
+	win2 = newwin(5, 7, 0, 0);
+	panel2 = new_panel(win2);
+	box(win2, 0, 0);
+	mvwprintw(win2, 1, 2, "This");
+	mvwprintw(win2, 2, 3, "is");
+	mvwprintw(win2, 3, 2, "win2");
+
 	update_panels();
 	doupdate();
 
 	getch();
 
-	move_panel(panel, 3, 6);
-	// mvwin(win, 3, 6);
-	// wrefresh(win);
+	move_panel(panel1, 0, 0);
+	move_panel(panel2, 3, 4);
 	update_panels();
 	doupdate();
 
@@ -432,6 +441,7 @@ int main()
 {
 	// 초기화를 진행합니다.
 	init();
+	test();
 
 	// 캔버스 경계 확인용 창을 생성합니다.
 	WINDOW *w_canvas = newwin(MAXHEIGHT, MAXWIDTH, 0, 0);
