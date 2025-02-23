@@ -77,6 +77,72 @@ void remove_format(t_format fmt)
 	if (fmt.color) attroff(COLOR_PAIR(fmt.color));
 }
 
+void draw_info2()
+{
+	mvwprintw(w_info, 2, 2, "THIS IS TEST");
+	mvwprintw(w_info, 3, 2, "HELLO WORLD");
+}
+
+void draw_updown2()
+{
+	mvwprintw(w_updown, 0, 3, "UP");
+	mvwprintw(w_updown, 1, 2, "DOWN");
+}
+
+void draw_score2()
+{
+	int offset_score = 0;
+
+	mvwprintw(w_score, 1, 2, "best");
+	snprintf(buf, BUFMAX, "%d", BEST);
+	if (BEST < 10)
+		offset_score = 1;
+	else if (BEST == DEFAULT_BEST)
+	{
+		snprintf(buf, BUFMAX, "-");
+		offset_score = 1;
+	}
+	mvwprintw(w_score, 1, 12 + offset_score, buf);
+	mvwprintw(w_score, 1, 15, "try");
+
+	mvwprintw(w_score, 2, 2, "score");
+	snprintf(buf, BUFMAX, "%d", score);
+	if (score < 10)
+		offset_score = 1;
+	mvwprintw(w_score, 2, 12 + offset_score, buf);
+	mvwprintw(w_score, 2, 15, "try");
+}
+
+// 상황별로 다른 서식을 받는다
+void draw_nums2(int from, int to, t_format fmt)
+{
+	int offset_num_x = 1, offset_num_y = 1;
+
+	apply_format(fmt);
+	
+	for (int num = from; num <= to; num++)
+	{
+		int x, y;
+
+		x = num % 10 + offset_num_x;
+		y = num / 10 + offset_num_y;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+
+	remove_format(fmt);
+}
+
+// update 에서 변경된 값을 토대로
+// 각 panel 들의 렌더링 요소를 갱신
+void draw_game2()
+{
+	draw_nums2(downto + 1, upto - 1, normal_num);
+	draw_score2();
+	draw_updown2();
+	draw_info2();
+}
+
 // 상황별로 다른 서식을 받는다
 void draw_nums(int from, int to, t_format fmt)
 {
@@ -95,49 +161,11 @@ void draw_nums(int from, int to, t_format fmt)
 	remove_format(fmt);
 }
 
-// version2
-// 모든 요소들을 창으로 생성 및 패널로 관리
-// 출력할때는 특정 창에 출력후 doupdate 호출
-// - w_background: 맨 처음에 한 번만 그려지면 됨
-// - w_number: 제외되는 숫자, 오답 or 정답
-// - w_score: 오답일경우 ++된 값을 업데이트, 정답일경우 best와 비교
-// - w_updown: 오답일경우 비교해서 up or down
-// - w_info: 오답일경우 greater or lesser, 정답의 경우 축하메세지
-
-// 일단 일부분만 그리지 말고 매번 전부 그리기?
-// 생각이 너무 많아짐;
-// window 별로 렌더링 함수를 만들고
-// 변화가 없으면 넘어가기
-
-// 창과 패널은 맨 처음 한 번만 생성하면 됨
-// draw에서는 특정 좌표에 mvwprintw로 갱신해주면 됨
-// 모든 draw 이후에 doupdate로 한번에 갱신
-
 // 상태값에 따라 화면을 렌더링
 // 0: 초기
 // 1: 오답, 작음
 // 2: 오답, 큼
 // 3: 정답
-
-void draw_w_number()
-{
-	WINDOW *w_number = newwin(12, 33, 0, 0);
-	PANEL *p_number = new_panel(w_number);
-
-	// number board
-	int offset_num_x = 1, offset_num_y = 1;
-	box(w_number, 0, 0);
-	for (int num = 0; num <= 99; num++)
-	{
-		int x, y;
-
-		x = num % 10 + offset_num_x;
-		y = num / 10 + offset_num_y;
-		snprintf(buf, BUFMAX, "%.2d", num);
-		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
-	}
-}
-
 void draw_game()
 {
 	snprintf(buf, BUFMAX, "Try: %d", score);
@@ -199,7 +227,6 @@ void update_game()
 	else
 		game_state = 3;
 }
-
 
 void click_handler(MEVENT &mevent)
 {
@@ -382,181 +409,9 @@ void init()
 	refresh();
 }
 
-/*
-
- Up and Down                              by. YHY_GAMES
- ──────────────────────────────────────────────────────
- ┌───────────────────────────────┐ ┌──────────────────┐
- │ 00 01 02 03 04 05 06 07 08 09 │ │ best       4 try │
- │ 10 11 12 13 14 15 16 17 18 19 │ │ score      1 try │
- │ 20 21 22 23 24 25 26 27 28 29 │ └──────────────────┘
- │ 30 31 32 33 34 35 36 37 38 39 │          up
- │ 40 41 42 43 44 45 46 47 48 49 │       < down >
- │ 50 51 52 53 54 55 56 57 58 59 │ ┌──────────────────┐
- │ 60 61 62 63 64 65 66 67 68 69 │ │                  │
- │ 70 71 72 73 74 75 76 77 78 79 │ │    52  greater   │
- │ 80 81 82 83 84 85 86 87 88 89 │ │   than answer    │
- │ 90 91 92 93 94 95 96 97 98 99 │ │                  │
- └───────────────────────────────┘ └──────────────────┘
- ──────────────────────────────────────────────────────
-
-( 56 x 17 )
-*/
-void draw_placeholder()
-{
-	int offset_x_ingame = 6, offset_y_ingame = 1;
-
-	WINDOW *w_background = newwin(15, 54, 0, 0);
-	WINDOW *w_number = newwin(12, 33, 0, 0);
-	WINDOW *w_score = newwin(4, 20, 0, 0);
-	WINDOW *w_updown = newwin(2, 8, 0, 0);
-	WINDOW *w_info = newwin(6, 20, 0, 0);
-
-	PANEL *p_background = new_panel(w_background);
-	PANEL *p_number = new_panel(w_number);
-	PANEL *p_score = new_panel(w_score);
-	PANEL *p_updown = new_panel(w_updown);
-	PANEL *p_info = new_panel(w_info);
-
-	// background
-	mvwprintw(w_background, 0, 0, "Up and Down");
-	mvwprintw(w_background, 0, 41, "by. YHY_GAMES");
-	mvwprintw(w_background, 1, 0, "──────────────────────────────────────────────────────");
-	mvwprintw(w_background, 14, 0, "──────────────────────────────────────────────────────");
-	move_panel(p_background, offset_y_ingame, offset_x_ingame);
-	
-	// number board
-	int offset_num_x = 1, offset_num_y = 1;
-	box(w_number, 0, 0);
-	for (int num = 0; num <= 99; num++)
-	{
-		int x, y;
-
-		x = num % 10 + offset_num_x;
-		y = num / 10 + offset_num_y;
-		snprintf(buf, BUFMAX, "%.2d", num);
-		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
-	}
-	move_panel(p_number, 2 + offset_y_ingame, offset_x_ingame);
-
-	// score board
-	int offset_score = 0;
-	box(w_score, 0, 0);
-
-	mvwprintw(w_score, 1, 2, "best");
-	snprintf(buf, BUFMAX, "%d", BEST);
-	if (BEST < 10)
-		offset_score = 1;
-	else if (BEST == DEFAULT_BEST)
-	{
-		snprintf(buf, BUFMAX, "-");
-		offset_score = 1;
-	}
-	mvwprintw(w_score, 1, 12 + offset_score, buf);
-	mvwprintw(w_score, 1, 15, "try");
-
-	mvwprintw(w_score, 2, 2, "score");
-	snprintf(buf, BUFMAX, "%d", score);
-	if (score < 10)
-		offset_score = 1;
-	mvwprintw(w_score, 2, 12 + offset_score, buf);
-	mvwprintw(w_score, 2, 15, "try");
-
-	move_panel(p_score, 2 + offset_y_ingame, 34 + offset_x_ingame);
-
-	// up down
-	mvwprintw(w_updown, 0, 3, "UP");
-	mvwprintw(w_updown, 1, 2, "DOWN");
-	move_panel(p_updown, 6 + offset_y_ingame, 40 + offset_x_ingame);
-
-	// info board
-	box(w_info, 0, 0);
-	move_panel(p_info, 8 + offset_y_ingame, 34 + offset_x_ingame);
-
-	update_panels();
-	doupdate();
-	getch();
-
-	wclear(w_score);
-
-	update_panels();
-	doupdate();
-	getch();
-}
-
-void draw_title()
-{
-	int offset_x = 2, offset_y = 3;
-
-	w_title = newwin(12, 64, 0, 0);
-	p_title = new_panel(w_title);
-
-	const char *title[] = {
-		"   __  __         ___              __   ____                    ",
-		"  / / / /___     /   |  ____  ____/ /  / __ \\____ _      ______ ",
-		" / / / / __ \\   / /| | / __ \\/ __  /  / / / / __ \\ | /| / / __ \\",
-		"/ /_/ / /_/ /  / ___ |/ / / / /_/ /  / /_/ / /_/ / |/ |/ / / / /",
-		"\\____/ .___/  /_/  |_/_/ /_/\\__,_/  /_____/\\____/|__/|__/_/ /_/ ",
-		"    /_/                                                         "
-
-	};
-
-	for (int i = 0; i < 6; i++)
-	{
-		mvwprintw(w_title, i, 0, "%s", title[i]);
-	}
-	mvwprintw(w_title, 7, 49, "by. YHY_GAMES");
-	attron(A_BLINK);
-	mvwprintw(w_title, 11, 22, "Press AnyKey to Start");
-	attroff(A_BLINK);
-	
-	move_panel(p_title, offset_y, offset_x);
-	update_panels();
-	doupdate();
-
-	getch();
-
-	del_panel(p_title);
-	delwin(w_title);
-	update_panels();
-	doupdate();
-}
-
 void test()
 {
-	WINDOW *win1;
-	WINDOW *win2;
-	PANEL *panel1;
-	PANEL *panel2;
-
-	win1 = newwin(5, 7, 3, 4);
-	panel1 = new_panel(win1);
-	box(win1, 0, 0);
-	mvwprintw(win1, 1, 2, "This");
-	mvwprintw(win1, 2, 3, "is");
-	mvwprintw(win1, 3, 2, "win1");
-
-	win2 = newwin(5, 7, 0, 0);
-	panel2 = new_panel(win2);
-	box(win2, 0, 0);
-	mvwprintw(win2, 1, 2, "This");
-	mvwprintw(win2, 2, 3, "is");
-	mvwprintw(win2, 3, 2, "win2");
-
-	update_panels();
-	doupdate();
-
-	getch();
-
-	move_panel(panel1, 0, 0);
-	move_panel(panel2, 3, 4);
-	update_panels();
-	doupdate();
-
-	getch();
-	
-	endwin();
-	exit(0);
+	//
 }
 
 int main()
@@ -573,15 +428,18 @@ int main()
 	game_settup();
 
 	// 게임화면 표시
-	show_panel(p_background);
-	show_panel(p_number);
-	show_panel(p_score);
-	show_panel(p_updown);
-	show_panel(p_info);
+	// show_panel(p_background);
+	// show_panel(p_number);
+	// show_panel(p_score);
+	// show_panel(p_updown);
+	// show_panel(p_info);
 
-	update_panels();
-	doupdate();
+	// draw_games2();
 
+	// update_panels();
+	// doupdate();
+
+	draw_game();
 	getch();
 
 	run();
