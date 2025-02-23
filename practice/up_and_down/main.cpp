@@ -9,7 +9,7 @@
 
 #include <sstream>
 
-#define MAXWIDTH 56
+#define MAXWIDTH 68
 #define MAXHEIGHT 17
 
 #define CHAR_WIDTH 2
@@ -235,6 +235,8 @@ void init()
 	init_pair(2, 8, COLOR_BLACK); // Exclude Number
 	init_pair(3, COLOR_BLACK, COLOR_RED); // Wrong Number
 	init_pair(4, COLOR_BLACK, COLOR_GREEN); // Correct Number
+
+	refresh();
 }
 
 /*
@@ -259,51 +261,62 @@ void init()
 */
 void draw_placeholder()
 {
+	WINDOW *w_background = newwin(15, 54, 0, 0);
+	// WINDOW *w_number = newwin(12, 33, 0, 0);
+	// WINDOW *w_score = newwin(4, 20, 0, 0);
+	// WINDOW *w_info = newwin(6, 20, 0, 0);
+
+	PANEL *p_background = new_panel(w_background);
+	// PANEL *p_number = new_panel(w_number);
+	// PANEL *p_score = new_panel(w_score);
+	// PANEL *p_winfo = new_panel(w_info);
+
+
 	// background
 	mvprintw(1, 1, "Up and Down");
 	mvprintw(1, 43, "by. YHY_GAMES");
 	mvprintw(2, 1, "──────────────────────────────────────────────────────");
 	mvprintw(MAXHEIGHT - 2, 1, "──────────────────────────────────────────────────────");
 	
-	// number board
-	mvprintw(3, 1, "┌───────────────────────────────┐");
-	for (int i = 4; i < 14; i++)
-	{
-		mvprintw(i, 1, "│");
-		mvprintw(i, 33, "│");
-	}
-	mvprintw(14, 1, "└───────────────────────────────┘");
-	for (int num = 0; num <= 99; num++)
-	{
-		int x, y;
+	// // number board
+	// mvprintw(3, 1, "┌───────────────────────────────┐");
+	// for (int i = 4; i < 14; i++)
+	// {
+	// 	mvprintw(i, 1, "│");
+	// 	mvprintw(i, 33, "│");
+	// }
+	// mvprintw(14, 1, "└───────────────────────────────┘");
+	// for (int num = 0; num <= 99; num++)
+	// {
+	// 	int x, y;
 
-		x = num % 10 + 1;
-		y = num / 10 + 4;
-		snprintf(buf, BUFMAX, "%.2d", num);
-		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
-	}
+	// 	x = num % 10 + 1;
+	// 	y = num / 10 + 4;
+	// 	snprintf(buf, BUFMAX, "%.2d", num);
+	// 	mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	// }
 
-	// score board
-	mvprintw(3, 35, "┌──────────────────┐");
-	for (int i = 4; i < 6; i++)
-	{
-		mvprintw(i, 35, "│");
-		mvprintw(i, 54, "│");
-	}
-	mvprintw(6, 35, "└──────────────────┘");
+	// // score board
+	// mvprintw(3, 35, "┌──────────────────┐");
+	// for (int i = 4; i < 6; i++)
+	// {
+	// 	mvprintw(i, 35, "│");
+	// 	mvprintw(i, 54, "│");
+	// }
+	// mvprintw(6, 35, "└──────────────────┘");
 
-	// up down
-	mvprintw(7, 44, "UP");
-	mvprintw(8, 43, "DOWN");
+	// // up down
+	// mvprintw(7, 44, "UP");
+	// mvprintw(8, 43, "DOWN");
 
-	// info board
-	mvprintw(9, 35, "┌──────────────────┐");
-	for (int i = 10; i < 14; i++)
-	{
-		mvprintw(i, 35, "│");
-		mvprintw(i, 54, "│");
-	}
-	mvprintw(14, 35, "└──────────────────┘");
+	// // info board
+	// mvprintw(9, 35, "┌──────────────────┐");
+	// for (int i = 10; i < 14; i++)
+	// {
+	// 	mvprintw(i, 35, "│");
+	// 	mvprintw(i, 54, "│");
+	// }
+	// mvprintw(14, 35, "└──────────────────┘");
 
 	getch();
 }
@@ -311,29 +324,39 @@ void draw_placeholder()
 void draw_title()
 {
 	int offset_x = 2, offset_y = 3;
+
+	WINDOW *w_title = newwin(12, 64, 0, 0);
+	PANEL *p_title = new_panel(w_title);
+
 	const char *title[] = {
 		"   __  __         ___              __   ____                    ",
 		"  / / / /___     /   |  ____  ____/ /  / __ \\____ _      ______ ",
 		" / / / / __ \\   / /| | / __ \\/ __  /  / / / / __ \\ | /| / / __ \\",
 		"/ /_/ / /_/ /  / ___ |/ / / / /_/ /  / /_/ / /_/ / |/ |/ / / / /",
 		"\\____/ .___/  /_/  |_/_/ /_/\\__,_/  /_____/\\____/|__/|__/_/ /_/ ",
-		"    /_/                                                         ",
-		"                                                                ",
-		"                                                 by. YHY_GAMES  ",
-		"                                                                ",
-		"                                                                ",
-		"                                                                "
+		"    /_/                                                         "
+
 	};
 
-	for (int i = 0; i < 11; i++)
+	for (int i = 0; i < 6; i++)
 	{
-		mvprintw(i + offset_y, offset_x, "%s", title[i]);
+		mvwprintw(w_title, i, 0, "%s", title[i]);
 	}
+	mvwprintw(w_title, 7, 49, "by. YHY_GAMES");
 	attron(A_BLINK);
-	mvprintw(11 + offset_y, offset_x, "                    Press AnyKey to Start                       ");
+	mvwprintw(w_title, 11, 22, "Press AnyKey to Start");
 	attroff(A_BLINK);
 	
-	refresh();
+	move_panel(p_title, offset_y, offset_x);
+	update_panels();
+	doupdate();
+
+	getch();
+
+	del_panel(p_title);
+	delwin(w_title);
+	update_panels();
+	doupdate();
 }
 
 void test()
@@ -377,12 +400,19 @@ int main()
 	// 초기화를 진행합니다.
 	init();
 
-	// draw_placeholder();
+	// 캔버스 경계 확인용 창을 생성합니다.
+	WINDOW *w_canvas = newwin(MAXHEIGHT, MAXWIDTH, 0, 0);
+	PANEL *p_canvas = new_panel(w_canvas);
+	box(w_canvas, 0, 0);
+	update_panels();
+	doupdate();
+
 	// 타이틀 화면 표시
 	draw_title();
-
+	
+	draw_placeholder();
 	getch();
-
+	
 	// 게임화면 표시
 	clear();
 	game_settup();
