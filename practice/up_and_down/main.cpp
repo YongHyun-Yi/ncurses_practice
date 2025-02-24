@@ -38,7 +38,7 @@ t_format highlight_num = { 0, 5 };
 
 int ans, upto, downto, score, best_score = 100, game_state;
 int selected_num = -1;
-bool game_over = false, is_greater = false, is_correct = false;
+bool game_over, is_greater, is_correct, is_init;
 
 WINDOW *w_canvas;
 
@@ -162,19 +162,21 @@ void draw_game2()
 // 상황별로 다른 서식을 받는다
 void draw_nums(int from, int to, t_format fmt)
 {
-	apply_format(stdscr, fmt);
+	int offset_num_x = 1, offset_num_y = 1;
+
+	apply_format(w_number, fmt);
 	
 	for (int num = from; num <= to; num++)
 	{
 		int x, y;
 
-		x = num % 10;
-		y = num / 10;
+		x = num % 10 + offset_num_x;
+		y = num / 10 + offset_num_y;
 		snprintf(buf, BUFMAX, "%.2d", num);
-		mvprintw(y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
 	}
 
-	remove_format(stdscr, fmt);
+	remove_format(w_number, fmt);
 }
 
 // 상태값에 따라 화면을 렌더링
@@ -232,7 +234,11 @@ void draw_nums(int from, int to, t_format fmt)
 void draw_game()
 {
 	// number
-	if (is_correct)
+	if (is_init)
+	{
+		draw_nums(downto + 1, upto - 1, normal_num);
+	}
+	else if (is_correct)
 	{
 		// 정답
 		draw_nums(selected_num, selected_num, correct_num);
@@ -244,18 +250,26 @@ void draw_game()
 		if (is_greater)
 		{
 			// 더 큰 숫자
-			draw_nums(selected_num, upto - 1, excluded_num);
+			draw_nums(selected_num + 1, upto - 1, excluded_num);
 			upto = selected_num;
 		}
 		else
 		{
 			// 더 작은 숫자
-			draw_nums(downto + 1, selected_num, excluded_num);
+			draw_nums(downto + 1, selected_num - 1, excluded_num);
 			downto = selected_num;
 		}
 	}
 
 	// score
+	if (is_init)
+	{
+		mvwprintw(w_score, 1, 2, "best");
+		mvwprintw(w_score, 1, 15, "try");
+
+		mvwprintw(w_score, 2, 2, "score");
+		mvwprintw(w_score, 2, 15, "try");
+	}
 	apply_format(w_score, highlight_num);
 	snprintf(buf, BUFMAX, "%d", score);
 	mvwprintw(w_score, 2, 12 + (score < 10), buf);
@@ -269,12 +283,12 @@ void draw_game()
 	remove_format(w_score, highlight_num);
 
 	// updown
-	if (is_correct)
+	if (is_init || is_correct)
 	{
 		// 정답
 		apply_format(w_updown, excluded_num);
-		mvwprintw(w_updown, 0, 3, "UP");
-		mvwprintw(w_updown, 1, 2, "DOWN");
+		mvwprintw(w_updown, 0, 1, "  UP  ");
+		mvwprintw(w_updown, 1, 0, "  DOWN  ");
 		remove_format(w_updown, excluded_num);
 	}
 	else
@@ -283,11 +297,11 @@ void draw_game()
 		{
 			// down
 			apply_format(w_updown, excluded_num);
-			mvwprintw(w_updown, 0, 3, "UP");
+			mvwprintw(w_updown, 0, 1, "  UP  ");
 			remove_format(w_updown, excluded_num);
 
 			apply_format(w_updown, normal_num);
-			mvwprintw(w_updown, 1, 2, "DOWN");
+			mvwprintw(w_updown, 1, 0, "  DOWN  ");
 			remove_format(w_updown, normal_num);
 
 			apply_format(w_updown, highlight_num);
@@ -299,11 +313,11 @@ void draw_game()
 		{
 			// up
 			apply_format(w_updown, normal_num);
-			mvwprintw(w_updown, 0, 3, "UP");
+			mvwprintw(w_updown, 0, 1, "  UP  ");
 			remove_format(w_updown, normal_num);
 
 			apply_format(w_updown, excluded_num);
-			mvwprintw(w_updown, 1, 2, "DOWN");
+			mvwprintw(w_updown, 1, 0, "  DOWN  ");
 			remove_format(w_updown, excluded_num);
 
 			apply_format(w_updown, highlight_num);
@@ -314,39 +328,50 @@ void draw_game()
 	}
 
 	// info
-	if (is_correct)
+	if (is_init)
+	{
+		werase(w_info);
+		box(w_info, 0, 0);
+	}
+	else if (is_correct)
 	{
 		apply_format(w_info, correct_num);
 		snprintf(buf, BUFMAX, "%d", selected_num);
-		mvwprintw(w_info, 2, 2, buf);
+		mvwprintw(w_info, 2, 4, buf);
 		remove_format(w_info, correct_num);
 		
 		snprintf(buf, BUFMAX, "is");
-		mvwprintw(w_info, 2, 6, buf);
+		mvwprintw(w_info, 2, 8, buf);
 
 		snprintf(buf, BUFMAX, "the answer");
-		mvwprintw(w_info, 3, 2, buf);
+		mvwprintw(w_info, 3, 4, buf);
 	}
 	else
 	{
 		apply_format(w_info, wrong_num);
 		snprintf(buf, BUFMAX, "%d", selected_num);
-		mvwprintw(w_info, 2, 2, buf);
+		mvwprintw(w_info, 2, 4, buf);
 		remove_format(w_info, wrong_num);
 
 		if (is_greater)
 		{
 			snprintf(buf, BUFMAX, "greater");
-			mvwprintw(w_info, 2, 6, buf);
+			mvwprintw(w_info, 2, 8, buf);
 		}
 		else
 		{
 			snprintf(buf, BUFMAX, "lesser");
-			mvwprintw(w_info, 2, 6, buf);
+			mvwprintw(w_info, 2, 8, buf);
 		}
 		snprintf(buf, BUFMAX, "than answer");
-		mvwprintw(w_info, 3, 2, buf);
+		mvwprintw(w_info, 3, 4, buf);
 	}
+
+	update_panels();
+	doupdate();
+
+	// if (is_init)
+		is_init = false;
 }
 
 // void update_game()
@@ -366,31 +391,40 @@ void draw_game()
 
 void update_game()
 {
-	++score;
-	
-	if (selected_num == ans)
+	if (is_init)
 	{
-		is_correct = true;
-		game_over = true;
-		return;
+		game_settup();
+	}
+	else
+	{
+		++score;
+		
+		if (selected_num == ans)
+		{
+			is_correct = true;
+			game_over = true;
+			return;
+		}
+	
+		is_correct = false;
+		if (selected_num < ans)
+			is_greater = false;
+		else
+			is_greater = true;
 	}
 
-	is_correct = false;
-	if (selected_num < ans)
-		is_greater = false;
-	else
-		is_greater = true;
 }
 
 void click_handler(MEVENT &mevent)
 {
 	int x, y, num;
+	int offset_x_ingame = 9, offset_y_ingame = 4;
 
-	// 초기화
-	selected_num = -1;
-
+	mevent.x -= offset_x_ingame;
+	mevent.y -= offset_y_ingame;
+	
 	// 공백 클릭은 무시한다
-	if (mevent.x % 3 == 2)
+	if (mevent.x < 0 || mevent.x >= 30 || mevent.y < 0 || mevent.y > 10 || mevent.x % 3 == 2)
 		return ;
 
 	x = mevent.x / (CHAR_WIDTH + CHAR_MARGIN);
@@ -442,7 +476,7 @@ void handle_input()
 	// 재시작
 	if (c == 'r')
 	{
-		game_settup();
+		is_init = true;
 		return;
 	}
 	// 종료
@@ -471,9 +505,12 @@ void run()
 {
 	while(1)
 	{
+		// 선택 초기화
+		selected_num = -1;
+
 		handle_input();
-		// 유효한 입력이 아니면 패스
-		if (selected_num == -1)
+		// 재시작도 아니고 변경사항도 없으면 스킵
+		if (is_init == false && selected_num == -1)
 			continue;
 		update_game();
 		draw_game();
@@ -490,7 +527,11 @@ void game_settup()
 	upto = DEFAULT_UPTO;
 	downto = DEFAULT_DOWNTO;
 	score = 0;
-	game_state = 0;
+	// game_state = 0;
+	game_over = false;
+	is_greater = false;
+	is_correct = false;
+	is_init = true;
 }
 
 void create_ingame_panels()
@@ -633,13 +674,13 @@ int main()
 	
 	game_settup();
 	create_ingame_panels();
-	getch();
+	// getch();
 	
 	// 게임화면 표시
 	// draw_games2();
 
 	draw_game();
-	getch();
+	// getch();
 
 	run();
 }
