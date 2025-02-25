@@ -93,14 +93,14 @@ void draw_info()
 	{
 		apply_format(w_info, correct_num);
 		snprintf(buf, BUFMAX, "%d", selected_num);
-		mvwprintw(w_info, 2, 5 + (selected_num < 10), buf);
+		mvwprintw(w_info, 2, 6 + (selected_num < 10), buf);
 		remove_format(w_info, correct_num);
 		
 		snprintf(buf, BUFMAX, "is");
-		mvwprintw(w_info, 2, 8, buf);
+		mvwprintw(w_info, 2, 10, buf);
 
 		snprintf(buf, BUFMAX, "the answer");
-		mvwprintw(w_info, 3, 4, buf);
+		mvwprintw(w_info, 3, 5, buf);
 	}
 	// 오답
 	else
@@ -118,7 +118,7 @@ void draw_info()
 		else
 		{
 			snprintf(buf, BUFMAX, "lesser");
-			mvwprintw(w_info, 2, 8, buf);
+			mvwprintw(w_info, 2, 9, buf);
 		}
 		snprintf(buf, BUFMAX, "than answer");
 		mvwprintw(w_info, 3, 4, buf);
