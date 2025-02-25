@@ -36,7 +36,7 @@ t_format wrong_num = { 0, 3 };
 t_format correct_num = { 0, 4 };
 t_format highlight_num = { 0, 5 };
 
-int ans, upto, downto, score, best_score = 100, game_state;
+int ans, upto, downto, score, best_score = 100;
 int selected_num = -1;
 bool game_over, is_greater, is_correct, is_init;
 
@@ -55,17 +55,6 @@ PANEL *p_number;
 PANEL *p_score;
 PANEL *p_updown;
 PANEL *p_info;
-
-/*
-	draw info
-
-	game over
-	number - from, to, true, false
-	score - true false
-	updown - 0 1 2
-	info
-
-*/
 
 void init();
 void game_settup();
@@ -90,197 +79,55 @@ void remove_format(WINDOW *win, t_format fmt)
 	if (fmt.color) wattroff(win, COLOR_PAIR(fmt.color));
 }
 
-void draw_info2()
+void draw_info()
 {
-	mvwprintw(w_info, 2, 2, "THIS IS TEST");
-	mvwprintw(w_info, 3, 2, "HELLO WORLD");
-}
+	werase(w_info);
+	box(w_info, 0, 0);
 
-void draw_updown2()
-{
-	mvwprintw(w_updown, 0, 3, "UP");
-	mvwprintw(w_updown, 1, 2, "DOWN");
-}
-
-void draw_score2()
-{
-	int offset_score = 0;
-
-	mvwprintw(w_score, 1, 2, "best");
-	snprintf(buf, BUFMAX, "%d", best_score);
-	if (best_score < 10)
-		offset_score = 1;
-	else if (best_score == DEFAULT_BEST)
-	{
-		snprintf(buf, BUFMAX, "-");
-		offset_score = 1;
-	}
-	mvwprintw(w_score, 1, 12 + offset_score, buf);
-	mvwprintw(w_score, 1, 15, "try");
-
-	mvwprintw(w_score, 2, 2, "score");
-	snprintf(buf, BUFMAX, "%d", score);
-	if (score < 10)
-		offset_score = 1;
-	mvwprintw(w_score, 2, 12 + offset_score, buf);
-	mvwprintw(w_score, 2, 15, "try");
-}
-
-// 상황별로 다른 서식을 받는다
-void draw_nums2(int from, int to, t_format fmt)
-{
-	int offset_num_x = 1, offset_num_y = 1;
-
-	apply_format(stdscr, fmt);
-	
-	for (int num = from; num <= to; num++)
-	{
-		int x, y;
-
-		x = num % 10 + offset_num_x;
-		y = num / 10 + offset_num_y;
-		snprintf(buf, BUFMAX, "%.2d", num);
-		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
-	}
-
-	remove_format(stdscr, fmt);
-}
-
-// update 에서 변경된 값을 토대로
-// 각 panel 들의 렌더링 요소를 갱신
-void draw_game2()
-{
-	draw_nums2(downto + 1, upto - 1, normal_num);
-	draw_score2();
-	draw_updown2();
-	draw_info2();
-
-	update_panels();
-	doupdate();
-}
-
-// 상황별로 다른 서식을 받는다
-void draw_nums(int from, int to, t_format fmt)
-{
-	int offset_num_x = 1, offset_num_y = 1;
-
-	apply_format(w_number, fmt);
-	
-	for (int num = from; num <= to; num++)
-	{
-		int x, y;
-
-		x = num % 10 + offset_num_x;
-		y = num / 10 + offset_num_y;
-		snprintf(buf, BUFMAX, "%.2d", num);
-		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
-	}
-
-	remove_format(w_number, fmt);
-}
-
-// 상태값에 따라 화면을 렌더링
-// 0: 초기
-// 1: 오답, 작음
-// 2: 오답, 큼
-// 3: 정답
-// void draw_game()
-// {
-// 	snprintf(buf, BUFMAX, "Try: %d", score);
-// 	mvprintw(11, 0, buf);
-
-// 	switch (game_state)
-// 	{
-// 		case 0:
-// 			draw_nums(downto, upto - 1, normal_num);
-// 			break;
-		
-// 		case 1:
-// 			draw_nums(downto + 1, selected_num - 1, excluded_num);
-// 			draw_nums(selected_num, selected_num, wrong_num);
-// 			downto = selected_num;
-// 			break;
-		
-// 		case 2:
-// 			draw_nums(selected_num + 1, upto - 1, excluded_num);
-// 			draw_nums(selected_num, selected_num, wrong_num);
-// 			upto = selected_num;
-// 			break;
-
-// 		case 3:
-// 			clear();
-// 			snprintf(buf, BUFMAX, "Game Over");
-// 			mvprintw(0, 0, buf);
-// 			snprintf(buf, BUFMAX, "answer is: %.2d", ans);
-// 			mvprintw(1, 0, buf);
-// 			if (score < BEST)
-// 			{
-// 				BEST = score;
-// 				snprintf(buf, BUFMAX, "Congratulations!!! you've got high score!");
-// 				mvprintw(3, 0, buf);
-// 			}
-// 			snprintf(buf, BUFMAX, "High Score: %d try", BEST);
-// 			mvprintw(5, 0, buf);
-// 			snprintf(buf, BUFMAX, "Score: %d try", score);
-// 			mvprintw(6, 0, buf);
-// 			snprintf(buf, BUFMAX, "Press 'R' key to Retry game");
-// 			mvprintw(8, 0, buf);
-// 			break;
-// 	}
-
-// 	selected_num = -1;
-// }
-
-void draw_game()
-{
-	// number
+	// info
 	if (is_init)
+		return;
+
+	// 정답
+	if (is_correct)
 	{
-		draw_nums(downto + 1, upto - 1, normal_num);
+		apply_format(w_info, correct_num);
+		snprintf(buf, BUFMAX, "%d", selected_num);
+		mvwprintw(w_info, 2, 5 + (selected_num < 10), buf);
+		remove_format(w_info, correct_num);
+		
+		snprintf(buf, BUFMAX, "is");
+		mvwprintw(w_info, 2, 8, buf);
+
+		snprintf(buf, BUFMAX, "the answer");
+		mvwprintw(w_info, 3, 4, buf);
 	}
-	else if (is_correct)
-	{
-		// 정답
-		draw_nums(selected_num, selected_num, correct_num);
-	}
+	// 오답
 	else
 	{
-		// 오답
-		draw_nums(selected_num, selected_num, wrong_num);
+		apply_format(w_info, wrong_num);
+		snprintf(buf, BUFMAX, "%d", selected_num);
+		mvwprintw(w_info, 2, 5 + (selected_num < 10), buf);
+		remove_format(w_info, wrong_num);
+
 		if (is_greater)
 		{
-			// 더 큰 숫자
-			draw_nums(selected_num + 1, upto - 1, excluded_num);
-			upto = selected_num;
+			snprintf(buf, BUFMAX, "greater");
+			mvwprintw(w_info, 2, 9, buf);
 		}
 		else
 		{
-			// 더 작은 숫자
-			draw_nums(downto + 1, selected_num - 1, excluded_num);
-			downto = selected_num;
+			snprintf(buf, BUFMAX, "lesser");
+			mvwprintw(w_info, 2, 8, buf);
 		}
+		snprintf(buf, BUFMAX, "than answer");
+		mvwprintw(w_info, 3, 4, buf);
 	}
+}
 
-	// score
-	if (is_init)
-	{
-		mvwprintw(w_score, 1, 2, "best");
-		mvwprintw(w_score, 1, 15, "try");
-
-		mvwprintw(w_score, 2, 2, "score");
-		mvwprintw(w_score, 2, 15, "try");
-	}
-	apply_format(w_score, highlight_num);
-	snprintf(buf, BUFMAX, "%d", score);
-	mvwprintw(w_score, 2, 12 + (score < 10), buf);
-	// best 갱신
-	if (game_over && score < best_score)
-	{
-		best_score = score;
-		snprintf(buf, BUFMAX, "%d", best_score);
-		mvwprintw(w_score, 1, 12 + (best_score < 10), buf);
-	}
-	remove_format(w_score, highlight_num);
+void draw_updown()
+{
+	werase(w_updown);
 
 	// updown
 	if (is_init || is_correct)
@@ -326,68 +173,98 @@ void draw_game()
 			remove_format(w_updown, highlight_num);
 		}
 	}
+}
 
-	// info
+void draw_score()
+{
+	werase(w_score);
+	box(w_score, 0, 0);
+
+	// score
+	mvwprintw(w_score, 1, 2, "best");
+	mvwprintw(w_score, 1, 15, "try");
+
+	mvwprintw(w_score, 2, 2, "score");
+	mvwprintw(w_score, 2, 15, "try");
+
+	apply_format(w_score, highlight_num);
+
+	if (best_score == DEFAULT_BEST)
+		mvwprintw(w_score, 1, 13, "-");
+	else
+	{
+		snprintf(buf, BUFMAX, "%d", best_score);
+		mvwprintw(w_score, 1, 12 + (best_score < 10), buf);
+	}
+	
+	snprintf(buf, BUFMAX, "%d", score);
+	mvwprintw(w_score, 2, 12 + (score < 10), buf);
+	
+	remove_format(w_score, highlight_num);
+}
+
+// ------------------------------------------------------------
+
+// 상황별로 다른 서식을 받는다
+void draw_nums(int from, int to, t_format fmt)
+{
+	int offset_num_x = 1, offset_num_y = 1;
+
+	apply_format(w_number, fmt);
+	
+	for (int num = from; num <= to; num++)
+	{
+		int x, y;
+
+		x = num % 10 + offset_num_x;
+		y = num / 10 + offset_num_y;
+		snprintf(buf, BUFMAX, "%.2d", num);
+		mvwprintw(w_number, y, x * (CHAR_WIDTH + CHAR_MARGIN), buf);
+	}
+
+	remove_format(w_number, fmt);
+}
+
+void draw_game()
+{
+	// number
 	if (is_init)
 	{
-		werase(w_info);
-		box(w_info, 0, 0);
+		draw_nums(downto + 1, upto - 1, normal_num);
 	}
 	else if (is_correct)
 	{
-		apply_format(w_info, correct_num);
-		snprintf(buf, BUFMAX, "%d", selected_num);
-		mvwprintw(w_info, 2, 4, buf);
-		remove_format(w_info, correct_num);
-		
-		snprintf(buf, BUFMAX, "is");
-		mvwprintw(w_info, 2, 8, buf);
-
-		snprintf(buf, BUFMAX, "the answer");
-		mvwprintw(w_info, 3, 4, buf);
+		// 정답
+		werase(w_number);
+		box(w_number, 0, 0);
+		draw_nums(DEFAULT_DOWNTO + 1, DEFAULT_UPTO - 1, excluded_num);
+		draw_nums(selected_num, selected_num, correct_num);
 	}
 	else
 	{
-		apply_format(w_info, wrong_num);
-		snprintf(buf, BUFMAX, "%d", selected_num);
-		mvwprintw(w_info, 2, 4, buf);
-		remove_format(w_info, wrong_num);
-
+		// 오답
+		draw_nums(selected_num, selected_num, wrong_num);
 		if (is_greater)
 		{
-			snprintf(buf, BUFMAX, "greater");
-			mvwprintw(w_info, 2, 8, buf);
+			// 더 큰 숫자
+			draw_nums(selected_num + 1, upto - 1, excluded_num);
+			upto = selected_num;
 		}
 		else
 		{
-			snprintf(buf, BUFMAX, "lesser");
-			mvwprintw(w_info, 2, 8, buf);
+			// 더 작은 숫자
+			draw_nums(downto + 1, selected_num - 1, excluded_num);
+			downto = selected_num;
 		}
-		snprintf(buf, BUFMAX, "than answer");
-		mvwprintw(w_info, 3, 4, buf);
 	}
+
+	draw_score();
+	draw_updown();
+	draw_info();
 
 	update_panels();
 	doupdate();
-
-	// if (is_init)
-		is_init = false;
 }
-
-// void update_game()
-// {
-// 	if (selected_num == -1)
-// 		return;
-	
-// 	++score;
-
-// 	if (selected_num < ans)
-// 		game_state = 1;
-// 	else if (selected_num > ans)
-// 		game_state = 2;
-// 	else
-// 		game_state = 3;
-// }
 
 void update_game()
 {
@@ -403,6 +280,8 @@ void update_game()
 		{
 			is_correct = true;
 			game_over = true;
+			if (score < best_score)
+				best_score = score;
 			return;
 		}
 	
@@ -415,7 +294,7 @@ void update_game()
 
 }
 
-void click_handler(MEVENT &mevent)
+bool get_selected_num(MEVENT &mevent)
 {
 	int x, y, num;
 	int offset_x_ingame = 9, offset_y_ingame = 4;
@@ -425,7 +304,7 @@ void click_handler(MEVENT &mevent)
 	
 	// 공백 클릭은 무시한다
 	if (mevent.x < 0 || mevent.x >= 30 || mevent.y < 0 || mevent.y > 10 || mevent.x % 3 == 2)
-		return ;
+		return false;
 
 	x = mevent.x / (CHAR_WIDTH + CHAR_MARGIN);
 	y = mevent.y * 10;
@@ -433,87 +312,51 @@ void click_handler(MEVENT &mevent)
 
 	// 제외된 범위 클릭은 무시한다
 	if (num <= downto || num >= upto)
-		return ;
+		return false;
 	
 	selected_num = num;
-}
-
-// void handle_input()
-// {
-// 	int c = getch();
-
-// 	switch(c)
-// 	{
-// 		// 마우스 이벤트 처리
-// 		// 이벤트 종류에 따라 분기
-// 		case KEY_MOUSE:
-// 			MEVENT mevent;
-
-// 			if (getmouse(&mevent) == OK)
-// 			{
-// 				if (mevent.bstate & BUTTON1_CLICKED)
-// 					click_handler(mevent);
-// 			}
-// 			break;
-		
-// 		// 재시작
-// 		case 'r':
-// 			clear();
-// 			game_settup();
-// 			break;
-		
-// 		// 종료
-// 		case 'q':
-// 			endwin();
-// 			exit(0);
-// 	}
-// }
-
-void handle_input()
-{
-	int c = getch();
-
-	// 재시작
-	if (c == 'r')
-	{
-		is_init = true;
-		return;
-	}
-	// 종료
-	if (c == 'q')
-	{
-		endwin();
-		exit(0);
-	}
-	// 게임 오버시 그 외 입력은 무시
-	if (game_over == true)
-		return;
-	
-	if (c == KEY_MOUSE)
-	{
-		MEVENT mevent;
-
-		if (getmouse(&mevent) == OK)
-		{
-			if (mevent.bstate & BUTTON1_CLICKED)
-				click_handler(mevent);
-		}
-	}
+	return true;
 }
 
 void run()
 {
-	while(1)
+	while (true)
 	{
-		// 선택 초기화
-		selected_num = -1;
-
-		handle_input();
-		// 재시작도 아니고 변경사항도 없으면 스킵
-		if (is_init == false && selected_num == -1)
+		// 입력 대기
+		int c = getch();
+	
+		// 재시작
+		if (c == 'r')
+		{
+			game_settup();
+			draw_game();
+			is_init = false;
 			continue;
-		update_game();
-		draw_game();
+		}
+		// 종료
+		if (c == 'q')
+		{
+			return;
+		}
+		// 게임 오버시 그 외 입력은 무시
+		if (game_over == true)
+			continue;
+		
+		if (c == KEY_MOUSE)
+		{
+			MEVENT mevent;
+	
+			if (getmouse(&mevent) == OK)
+			{
+				if (mevent.bstate & BUTTON1_CLICKED)
+				{
+					if (get_selected_num(mevent) == false)
+						continue;
+					update_game();
+					draw_game();
+				}
+			}
+		}
 	}
 }
 
@@ -527,7 +370,6 @@ void game_settup()
 	upto = DEFAULT_UPTO;
 	downto = DEFAULT_DOWNTO;
 	score = 0;
-	// game_state = 0;
 	game_over = false;
 	is_greater = false;
 	is_correct = false;
@@ -642,10 +484,10 @@ void init()
 
 	start_color();
 	init_color(8, 500, 500, 500); // A_DIM 대신 회색을 추가한다
-	init_pair(1, COLOR_BLACK, COLOR_WHITE); // Normal Number
+	init_pair(1, COLOR_WHITE, COLOR_BLACK); // Normal Number
 	init_pair(2, 8, COLOR_BLACK); // Exclude Number
-	init_pair(3, COLOR_BLACK, COLOR_RED); // Wrong Number
-	init_pair(4, COLOR_BLACK, COLOR_GREEN); // Correct Number
+	init_pair(3, COLOR_RED, COLOR_BLACK); // Wrong Number
+	init_pair(4, COLOR_GREEN, COLOR_BLACK); // Correct Number
 	init_pair(5, COLOR_YELLOW, COLOR_BLACK); // Highlight Number
 
 	refresh();
@@ -668,19 +510,20 @@ int main()
 	// 초기화를 진행합니다.
 	init();
 
-	// getch();
+	// 타이틀 표시
 	title();
-	// hide_panel(p_title);
 	
-	game_settup();
+	// 인게임 패널들 생성
 	create_ingame_panels();
-	// getch();
+
+	// 게임 초기화
+	game_settup();
 	
 	// 게임화면 표시
-	// draw_games2();
-
 	draw_game();
-	// getch();
+	is_init = false;
 
 	run();
+
+	endwin();
 }
